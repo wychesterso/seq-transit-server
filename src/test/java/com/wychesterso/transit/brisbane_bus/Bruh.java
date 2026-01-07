@@ -10,9 +10,9 @@ public class Bruh {
 
     private static void printStops() {
         try {
-            for (Stop stop : StopLoader.loadStops()) {
-                System.out.println(stop);
-            }
+//            for (Stop stop : StopLoader.loadStops()) {
+//                System.out.println(stop);
+//            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -20,9 +20,9 @@ public class Bruh {
 
     private static void printRoutes() {
         try {
-            for (Route route : RouteLoader.loadRoutes()) {
-                System.out.println(route);
-            }
+//            for (Route route : RouteLoader.loadRoutes()) {
+//                System.out.println(route);
+//            }
         } catch (Exception e) {
             e.printStackTrace();
         }
