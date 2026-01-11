@@ -50,9 +50,9 @@ public class Bruh {
 
     private static void printCalendar() {
         try {
-            for (Calendar calendar : CalendarLoader.loadCalendar()) {
-                System.out.println(calendar);
-            }
+//            for (Calendar calendar : CalendarLoader.loadCalendar()) {
+//                System.out.println(calendar);
+//            }
         } catch (Exception e) {
             e.printStackTrace();
         }

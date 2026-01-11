@@ -1,5 +1,7 @@
 package com.wychesterso.transit.brisbane_bus.gtfs;
 
+import org.slf4j.Logger;
+
 public class LoadHelper {
     public static Integer parseInteger(String s) {
         if (s == null || s.isBlank()) return null;
@@ -21,5 +23,9 @@ public class LoadHelper {
         return Integer.parseInt(p[0]) * 3600
                 + Integer.parseInt(p[1]) * 60
                 + Integer.parseInt(p[2]);
+    }
+
+    public static void printLog(Logger log, String s) {
+        log.info("CalendarLoader: " + s);
     }
 }

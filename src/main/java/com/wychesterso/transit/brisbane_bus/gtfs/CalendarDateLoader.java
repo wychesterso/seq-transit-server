@@ -12,19 +12,19 @@ import java.sql.Connection;
 import java.sql.Statement;
 
 @Component
-public class TripLoader {
+public class CalendarDateLoader {
 
     private final DataSource dataSource;
-    private static final Logger log = LoggerFactory.getLogger(TripLoader.class);
+    private static final Logger log = LoggerFactory.getLogger(CalendarDateLoader.class);
 
-    public TripLoader(DataSource dataSource) {
+    public CalendarDateLoader(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
-    public void loadTrips() throws Exception {
+    public void loadCalendarDates() throws Exception {
 
         long start = System.currentTimeMillis();
-        log.info("Starting TripLoader...");
+        log.info("Starting CalendarDateLoader...");
 
         try (Connection conn = dataSource.getConnection()) {
 
@@ -41,34 +41,54 @@ public class TripLoader {
                 // st.execute("DROP INDEX IF EXISTS idx_stop_times_stop_arrival");
             }
 
-            // clear table
-            log.info("Truncating trips...");
+            // clear staging table
+            log.info("Truncating calendar_dates_raw...");
             try (Statement st = conn.createStatement()) {
-                st.execute("TRUNCATE trips");
+                st.execute("TRUNCATE calendar_dates_raw");
             }
 
             // copy raw csv to staging
-            log.info("Starting COPY trips...");
+            log.info("Starting COPY calendar_dates_raw...");
             long copyStart = System.currentTimeMillis();
 
             try (FileReader reader = new FileReader(
-                    "src/main/resources/static/SEQ_GTFS/trips.txt")) {
+                    "src/main/resources/static/SEQ_GTFS/calendar_dates.txt")) {
 
                 long rows = copy.copyIn("""
-                    COPY trips (
-                        route_id,
+                    COPY calendar_dates_raw (
                         service_id,
-                        trip_id,
-                        trip_headsign,
-                        direction_id,
-                        block_id,
-                        shape_id
+                        date,
+                        exception_type
                     )
                     FROM STDIN WITH (FORMAT csv, HEADER true)
                 """, reader);
 
-                log.info("COPY trips finished: {} rows in {} ms",
+                log.info("COPY calendar_dates_raw finished: {} rows in {} ms",
                         rows, System.currentTimeMillis() - copyStart);
+            }
+
+            // transform staging to actual
+            log.info("Starting transform + insert into calendar_dates...");
+            long insertStart = System.currentTimeMillis();
+
+            try (Statement st = conn.createStatement()) {
+                st.execute("""
+                    TRUNCATE calendar_dates;
+        
+                    INSERT INTO calendar_dates (
+                        service_id,
+                        date,
+                        exception_type
+                    )
+                    SELECT
+                        service_id,
+                        to_date(date, 'YYYYMMDD'),
+                        exception_type::smallint
+                    FROM calendar_dates_raw;
+                """);
+
+                log.info("Insert finished in {} ms",
+                        System.currentTimeMillis() - insertStart);
             }
 
             // recreate indexes
@@ -81,7 +101,7 @@ public class TripLoader {
                 log.info("Indexes recreated");
             }
 
-            log.info("TripLoader finished in {} ms",
+            log.info("CalendarDateLoader finished in {} ms",
                     System.currentTimeMillis() - start);
         }
     }

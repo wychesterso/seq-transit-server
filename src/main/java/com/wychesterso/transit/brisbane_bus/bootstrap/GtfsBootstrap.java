@@ -1,9 +1,6 @@
 package com.wychesterso.transit.brisbane_bus.bootstrap;
 
-import com.wychesterso.transit.brisbane_bus.gtfs.RouteLoader;
-import com.wychesterso.transit.brisbane_bus.gtfs.StopLoader;
-import com.wychesterso.transit.brisbane_bus.gtfs.StopTimeLoader;
-import com.wychesterso.transit.brisbane_bus.gtfs.TripLoader;
+import com.wychesterso.transit.brisbane_bus.gtfs.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -13,6 +10,8 @@ public class GtfsBootstrap implements CommandLineRunner {
 
     private final RouteLoader routeLoader;
     private final StopLoader stopLoader;
+    private final CalendarLoader calendarLoader;
+    private final CalendarDateLoader calendarDateLoader;
     private final TripLoader tripLoader;
     private final StopTimeLoader stopTimeLoader;
 
@@ -22,11 +21,15 @@ public class GtfsBootstrap implements CommandLineRunner {
     public GtfsBootstrap(
             RouteLoader routeLoader,
             StopLoader stopLoader,
+            CalendarLoader calendarLoader,
+            CalendarDateLoader calendarDateLoader,
             TripLoader tripLoader,
             StopTimeLoader stopTimeLoader
     ) {
         this.routeLoader = routeLoader;
         this.stopLoader = stopLoader;
+        this.calendarLoader = calendarLoader;
+        this.calendarDateLoader = calendarDateLoader;
         this.tripLoader = tripLoader;
         this.stopTimeLoader = stopTimeLoader;
     }
@@ -36,6 +39,8 @@ public class GtfsBootstrap implements CommandLineRunner {
         if (!loadOnStartup) return;
         routeLoader.loadRoutes();
         stopLoader.loadStops();
+        calendarLoader.loadCalendar();
+        calendarDateLoader.loadCalendarDates();
         tripLoader.loadTrips();
         stopTimeLoader.loadStopTimes();
     }
