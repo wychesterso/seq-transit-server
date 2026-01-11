@@ -35,12 +35,6 @@ public class CalendarLoader {
             PGConnection pg = conn.unwrap(PGConnection.class);
             CopyManager copy = pg.getCopyAPI();
 
-            // drop indexes to speed up bulk insert
-            try (Statement st = conn.createStatement()) {
-                log.info("Dropping indexes...");
-                // st.execute("DROP INDEX IF EXISTS idx_stop_times_stop_arrival");
-            }
-
             // clear staging table
             log.info("Truncating calendar_raw...");
             try (Statement st = conn.createStatement()) {
@@ -110,16 +104,6 @@ public class CalendarLoader {
 
                 log.info("Insert finished in {} ms",
                         System.currentTimeMillis() - insertStart);
-            }
-
-            // recreate indexes
-            try (Statement st = conn.createStatement()) {
-                log.info("Recreating indexes...");
-//                st.execute("""
-//                    CREATE INDEX IF NOT EXISTS idx_stop_times_stop_arrival
-//                    ON stop_times (stop_id, arrival_time);
-//                """);
-                log.info("Indexes recreated");
             }
 
             log.info("CalendarLoader finished in {} ms",
