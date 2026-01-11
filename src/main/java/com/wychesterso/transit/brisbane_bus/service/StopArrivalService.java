@@ -1,8 +1,7 @@
 package com.wychesterso.transit.brisbane_bus.service;
 
-import com.wychesterso.transit.brisbane_bus.dto.RouteAtStopArrivalDTO;
-import com.wychesterso.transit.brisbane_bus.dto.RouteAtStopArrivalResponse;
 import com.wychesterso.transit.brisbane_bus.dto.StopArrivalDTO;
+import com.wychesterso.transit.brisbane_bus.dto.StopArrivalResponse;
 import com.wychesterso.transit.brisbane_bus.repository.StopArrivalRepository;
 import org.springframework.stereotype.Service;
 
@@ -25,17 +24,20 @@ public class StopArrivalService {
         this.repository = repository;
     }
 
-    public List<StopArrivalDTO> getNextArrivalsForStop(String stopId) {
-        int nowSeconds = LocalTime.now().toSecondOfDay();
-        return repository.findNextArrivalsForStop(stopId, nowSeconds);
+    public List<StopArrivalResponse> getNextArrivalsForStop(String stopId) {
+        int nowSeconds = LocalTime.now(BRISBANE).toSecondOfDay();
+        return mapDTOtoResponse(repository.findNextArrivalsForStop(stopId, nowSeconds));
     }
 
-    public List<RouteAtStopArrivalResponse> getNextArrivalsForRouteAtStop(String stopId, String routeId) {
+    public List<StopArrivalResponse> getNextArrivalsForRouteAtStop(String stopId, String routeId) {
         int nowSeconds = LocalTime.now(BRISBANE).toSecondOfDay();
+        return mapDTOtoResponse(repository.findNextArrivalsForRouteAtStop(stopId, routeId, nowSeconds));
+    }
+
+    private List<StopArrivalResponse> mapDTOtoResponse(List<StopArrivalDTO> arrivals) {
         LocalDate serviceDate = LocalDate.now(BRISBANE);
 
-        return repository.findNextArrivalsForRouteAtStop(stopId, routeId, nowSeconds)
-                .stream()
+        return arrivals.stream()
                 .map(r -> {
                     LocalDateTime arrival =
                             serviceDate.atStartOfDay().plusSeconds(r.getArrivalTimeSeconds());
@@ -43,7 +45,7 @@ public class StopArrivalService {
                     LocalDateTime departure =
                             serviceDate.atStartOfDay().plusSeconds(r.getDepartureTimeSeconds());
 
-                    return new RouteAtStopArrivalResponse(
+                    return new StopArrivalResponse(
                             r.getTripId(),
                             r.getArrivalTimeSeconds(),
                             arrival.format(TIME_FMT),

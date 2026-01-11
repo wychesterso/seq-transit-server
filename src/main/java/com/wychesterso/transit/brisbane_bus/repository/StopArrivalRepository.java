@@ -1,6 +1,5 @@
 package com.wychesterso.transit.brisbane_bus.repository;
 
-import com.wychesterso.transit.brisbane_bus.dto.RouteAtStopArrivalDTO;
 import com.wychesterso.transit.brisbane_bus.dto.StopArrivalDTO;
 import com.wychesterso.transit.brisbane_bus.model.StopTime;
 import com.wychesterso.transit.brisbane_bus.model.StopTimeId;
@@ -81,7 +80,7 @@ public interface StopArrivalRepository extends JpaRepository<StopTime, StopTimeI
         """,
         nativeQuery = true
     )
-    List<RouteAtStopArrivalDTO> findNextArrivalsForRouteAtStop(
+    List<StopArrivalDTO> findNextArrivalsForRouteAtStop(
             @Param("stopId") String stopId,
             @Param("routeId") String routeId,
             @Param("now") int now
