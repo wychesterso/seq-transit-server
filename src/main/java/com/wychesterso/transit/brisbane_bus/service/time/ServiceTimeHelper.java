@@ -12,15 +12,19 @@ public class ServiceTimeHelper {
 
     public static ServiceClock now() {
         ZonedDateTime now = ZonedDateTime.now(BRISBANE);
+        int clockSeconds = now.toLocalTime().toSecondOfDay();
 
-        LocalDate serviceDate = now.toLocalDate();
-        int serviceSeconds = now.toLocalTime().toSecondOfDay();
+        LocalDate serviceDate;
+        int nowSeconds;
 
         if (now.toLocalTime().isBefore(DAY_CUTOFF)) {
-            serviceDate = serviceDate.minusDays(1);
-            serviceSeconds += 24 * 3600;
+            serviceDate = now.toLocalDate().minusDays(1);
+            nowSeconds = clockSeconds + 86400;
+        } else {
+            serviceDate = now.toLocalDate();
+            nowSeconds = clockSeconds;
         }
 
-        return new ServiceClock(serviceDate, serviceSeconds);
+        return new ServiceClock(serviceDate, nowSeconds);
     }
 }

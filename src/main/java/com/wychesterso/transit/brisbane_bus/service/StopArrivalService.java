@@ -2,6 +2,7 @@ package com.wychesterso.transit.brisbane_bus.service;
 
 import com.wychesterso.transit.brisbane_bus.dto.StopArrivalDTO;
 import com.wychesterso.transit.brisbane_bus.dto.StopArrivalResponse;
+import com.wychesterso.transit.brisbane_bus.dto.StopArrivalResponseList;
 import com.wychesterso.transit.brisbane_bus.repository.StopArrivalRepository;
 import com.wychesterso.transit.brisbane_bus.service.time.ServiceClock;
 import com.wychesterso.transit.brisbane_bus.service.time.ServiceTimeHelper;
@@ -19,14 +20,14 @@ import java.util.List;
 public class StopArrivalService {
 
     private final StopArrivalRepository repository;
-    private final RedisTemplate<String, List<StopArrivalResponse>> redis;
+    private final RedisTemplate<String, Object> redis;
 
     private static final ZoneId BRISBANE = ZoneId.of("Australia/Brisbane");
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm:ss");
 
     public StopArrivalService(
             StopArrivalRepository repository,
-            RedisTemplate<String, List<StopArrivalResponse>> redis) {
+            RedisTemplate<String, Object> redis) {
         this.repository = repository;
         this.redis = redis;
     }
@@ -51,21 +52,32 @@ public class StopArrivalService {
                 .formatted(stopId, routeId, serviceDate);
 
         @SuppressWarnings("unchecked")
-        List<StopArrivalResponse> cached =
-                (List<StopArrivalResponse>) redis.opsForValue().get(key);
-        if (cached != null) return cached;
+        StopArrivalResponseList cached = (StopArrivalResponseList) redis.opsForValue().get(key);
+
+        if (cached != null) {
+            System.out.println("Using cached Redis result");
+            return cached.getArrivals();
+        }
 
         List<StopArrivalResponse> result = mapDTOtoResponse(
-                repository.findNextArrivalsForRouteAtStop(stopId, routeId, serviceDate, nowSeconds),
+                repository.findNextArrivalsForRouteAtStop(
+                        stopId,
+                        routeId,
+                        serviceDateToInt(serviceDate),
+                        nowSeconds),
                 serviceDate
         );
 
         redis.opsForValue().set(
                 key,
-                result,
+                new StopArrivalResponseList(result),
                 Duration.ofSeconds(30) // TTL
         );
 
+        System.out.println("stopId = " + stopId);
+        System.out.println("routeId = " + routeId);
+        System.out.println("serviceDate = " + serviceDate);
+        System.out.println("nowSeconds = " + nowSeconds);
         return result;
     }
 
@@ -88,5 +100,11 @@ public class StopArrivalService {
                     );
                 })
                 .toList();
+    }
+
+    private int serviceDateToInt(LocalDate serviceDate) {
+        return serviceDate.getYear() * 10000
+                + serviceDate.getMonthValue() * 100
+                + serviceDate.getDayOfMonth();
     }
 }

@@ -39,9 +39,9 @@ public interface StopArrivalRepository extends JpaRepository<StopTime, StopTimeI
                 SELECT service_id
                 FROM calendar
                 WHERE
-                    start_date <= :serviceDate
-                    AND end_date >= :serviceDate
-                    AND CASE EXTRACT(DOW FROM CURRENT_DATE)
+                    start_date <= TO_DATE(CAST(:serviceDateInt AS text), 'YYYYMMDD')
+                    AND end_date >= TO_DATE(CAST(:serviceDateInt AS text), 'YYYYMMDD')
+                    AND CASE EXTRACT(DOW FROM TO_DATE(CAST(:serviceDateInt AS text), 'YYYYMMDD'))
                         WHEN 0 THEN sunday
                         WHEN 1 THEN monday
                         WHEN 2 THEN tuesday
@@ -55,14 +55,14 @@ public interface StopArrivalRepository extends JpaRepository<StopTime, StopTimeI
         
                 SELECT service_id
                 FROM calendar_dates
-                WHERE date = :serviceDate
+                WHERE date = TO_DATE(CAST(:serviceDateInt AS text), 'YYYYMMDD')
                     AND exception_type = 1
         
                 EXCEPT
         
                 SELECT service_id
                 FROM calendar_dates
-                WHERE date = :serviceDate
+                WHERE date = TO_DATE(CAST(:serviceDateInt AS text), 'YYYYMMDD')
                 AND exception_type = 2
             )
         
@@ -84,7 +84,7 @@ public interface StopArrivalRepository extends JpaRepository<StopTime, StopTimeI
     List<StopArrivalDTO> findNextArrivalsForRouteAtStop(
             @Param("stopId") String stopId,
             @Param("routeId") String routeId,
-            @Param("serviceDate") LocalDate serviceDate,
+            @Param("serviceDateInt") int serviceDateInt,
             @Param("now") int now
     );
 }
