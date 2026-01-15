@@ -8,6 +8,9 @@ import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.io.FileReader;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.Statement;
 
@@ -21,10 +24,15 @@ public class StopTimeLoader {
         this.dataSource = dataSource;
     }
 
-    public void loadStopTimes() throws Exception {
+    public void loadStopTimes(Path gtfsDir) throws Exception {
+
+        Path stopTimesFile = gtfsDir.resolve("stop_times.txt");
+        if (!Files.exists(stopTimesFile)) {
+            throw new IllegalStateException("stop_times.txt not found in " + gtfsDir);
+        }
 
         long start = System.currentTimeMillis();
-        log.info("Starting StopTimeLoader...");
+        log.info("Starting StopTimeLoader using {}", stopTimesFile);
 
         try (Connection conn = dataSource.getConnection()) {
 
@@ -51,8 +59,7 @@ public class StopTimeLoader {
             log.info("Starting COPY stop_times_raw...");
             long copyStart = System.currentTimeMillis();
 
-            try (FileReader reader = new FileReader(
-                    "src/main/resources/static/SEQ_GTFS/stop_times.txt")) {
+            try (Reader reader = Files.newBufferedReader(stopTimesFile)) {
 
                 long rows = copy.copyIn("""
                     COPY stop_times_raw (

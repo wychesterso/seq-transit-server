@@ -1,0 +1,37 @@
+package com.wychesterso.transit.brisbane_bus.importer;
+
+import com.wychesterso.transit.brisbane_bus.gtfs.RouteLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+import javax.sql.DataSource;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+@Component
+public class GtfsZipDownloader {
+
+    private static final Logger log = LoggerFactory.getLogger(GtfsZipDownloader.class);
+
+    public Path download(String url, Path targetDir) throws IOException, InterruptedException {
+        Files.createDirectories(targetDir);
+
+        Path zipPath = targetDir.resolve("gtfs.zip");
+
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder(URI.create(url)).build();
+
+        client.send(
+                request,
+                HttpResponse.BodyHandlers.ofFile(zipPath)
+        );
+
+        return zipPath;
+    }
+}

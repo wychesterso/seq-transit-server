@@ -8,6 +8,9 @@ import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.io.FileReader;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.Statement;
 
@@ -21,7 +24,12 @@ public class CalendarDateLoader {
         this.dataSource = dataSource;
     }
 
-    public void loadCalendarDates() throws Exception {
+    public void loadCalendarDates(Path gtfsDir) throws Exception {
+
+        Path calendarDatesFile = gtfsDir.resolve("calendar_dates.txt");
+        if (!Files.exists(calendarDatesFile)) {
+            throw new IllegalStateException("calendar_dates.txt not found in " + gtfsDir);
+        }
 
         long start = System.currentTimeMillis();
         log.info("Starting CalendarDateLoader...");
@@ -45,8 +53,7 @@ public class CalendarDateLoader {
             log.info("Starting COPY calendar_dates_raw...");
             long copyStart = System.currentTimeMillis();
 
-            try (FileReader reader = new FileReader(
-                    "src/main/resources/static/SEQ_GTFS/calendar_dates.txt")) {
+            try (Reader reader = Files.newBufferedReader(calendarDatesFile)) {
 
                 long rows = copy.copyIn("""
                     COPY calendar_dates_raw (

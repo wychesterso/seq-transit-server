@@ -8,6 +8,9 @@ import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.io.FileReader;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.Statement;
 
@@ -21,7 +24,12 @@ public class TripLoader {
         this.dataSource = dataSource;
     }
 
-    public void loadTrips() throws Exception {
+    public void loadTrips(Path gtfsDir) throws Exception {
+
+        Path tripsFile = gtfsDir.resolve("trips.txt");
+        if (!Files.exists(tripsFile)) {
+            throw new IllegalStateException("trips.txt not found in " + gtfsDir);
+        }
 
         long start = System.currentTimeMillis();
         log.info("Starting TripLoader...");
@@ -51,8 +59,7 @@ public class TripLoader {
             log.info("Starting COPY trips...");
             long copyStart = System.currentTimeMillis();
 
-            try (FileReader reader = new FileReader(
-                    "src/main/resources/static/SEQ_GTFS/trips.txt")) {
+            try (Reader reader = Files.newBufferedReader(tripsFile)) {
 
                 long rows = copy.copyIn("""
                     COPY trips (
