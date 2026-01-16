@@ -1,4 +1,4 @@
-package com.wychesterso.transit.brisbane_bus.static_data.importer;
+package com.wychesterso.transit.brisbane_bus.st.importer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

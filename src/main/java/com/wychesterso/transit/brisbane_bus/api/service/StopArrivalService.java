@@ -3,7 +3,7 @@ package com.wychesterso.transit.brisbane_bus.api.service;
 import com.wychesterso.transit.brisbane_bus.api.dto.StopArrivalDTO;
 import com.wychesterso.transit.brisbane_bus.api.dto.StopArrivalResponse;
 import com.wychesterso.transit.brisbane_bus.api.dto.StopArrivalResponseList;
-import com.wychesterso.transit.brisbane_bus.static_data.repository.StopArrivalRepository;
+import com.wychesterso.transit.brisbane_bus.st.repository.StopArrivalRepository;
 import com.wychesterso.transit.brisbane_bus.api.service.time.ServiceClock;
 import com.wychesterso.transit.brisbane_bus.api.service.time.ServiceTimeHelper;
 import org.springframework.data.redis.core.RedisTemplate;

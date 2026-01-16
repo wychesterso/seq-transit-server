@@ -1,4 +1,4 @@
-package com.wychesterso.transit.brisbane_bus.static_data.loader;
+package com.wychesterso.transit.brisbane_bus.st.loader;
 
 import org.postgresql.PGConnection;
 import org.postgresql.copy.CopyManager;

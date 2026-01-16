@@ -1,6 +1,6 @@
-package com.wychesterso.transit.brisbane_bus.static_data.importer;
+package com.wychesterso.transit.brisbane_bus.st.importer;
 
-import com.wychesterso.transit.brisbane_bus.static_data.loader.*;
+import com.wychesterso.transit.brisbane_bus.st.loader.*;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 

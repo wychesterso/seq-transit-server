@@ -1,4 +1,4 @@
-package com.wychesterso.transit.brisbane_bus.static_data.loader;
+package com.wychesterso.transit.brisbane_bus.st.loader;
 
 import org.postgresql.PGConnection;
 import org.postgresql.copy.CopyManager;
@@ -15,25 +15,25 @@ import java.sql.Connection;
 import java.sql.Statement;
 
 @Component
-public class RouteLoader {
+public class StopLoader {
 
     private final DataSource dataSource;
     private static final Logger log = LoggerFactory.getLogger(RouteLoader.class);
 
-    public RouteLoader(DataSource dataSource) {
+    public StopLoader(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
     @Transactional
-    public void loadRoutes(Path gtfsDir) throws Exception {
+    public void loadStops(Path gtfsDir) throws Exception {
 
-        Path routesFile = gtfsDir.resolve("routes.txt");
-        if (!Files.exists(routesFile)) {
-            throw new IllegalStateException("routes.txt not found in " + gtfsDir);
+        Path stopsFile = gtfsDir.resolve("stops.txt");
+        if (!Files.exists(stopsFile)) {
+            throw new IllegalStateException("stops.txt not found in " + gtfsDir);
         }
 
         long start = System.currentTimeMillis();
-        log.info("Starting RouteLoader...");
+        log.info("Starting StopLoader...");
 
         try (Connection conn = dataSource.getConnection()) {
 
@@ -45,36 +45,39 @@ public class RouteLoader {
             CopyManager copy = pg.getCopyAPI();
 
             // clear table
-            log.info("Truncating routes...");
+            log.info("Truncating stops...");
             try (Statement st = conn.createStatement()) {
-                st.execute("TRUNCATE routes");
+                st.execute("TRUNCATE stops");
             }
 
             // copy raw csv to staging
-            log.info("Starting COPY routes...");
+            log.info("Starting COPY stops...");
             long copyStart = System.currentTimeMillis();
 
-            try (Reader reader = Files.newBufferedReader(routesFile)) {
+            try (Reader reader = Files.newBufferedReader(stopsFile)) {
 
                 long rows = copy.copyIn("""
-                            COPY routes (
-                                route_id,
-                                route_short_name,
-                                route_long_name,
-                                route_desc,
-                                route_type,
-                                route_url,
-                                route_color,
-                                route_text_color
+                            COPY stops (
+                                stop_id,
+                                stop_code,
+                                stop_name,
+                                stop_desc,
+                                stop_lat,
+                                stop_lon,
+                                zone_id,
+                                stop_url,
+                                location_type,
+                                parent_station,
+                                platform_code
                             )
                             FROM STDIN WITH (FORMAT csv, HEADER true)
                         """, reader);
 
-                log.info("COPY routes finished: {} rows in {} ms",
+                log.info("COPY stops finished: {} rows in {} ms",
                         rows, System.currentTimeMillis() - copyStart);
             }
 
-            log.info("RouteLoader finished in {} ms",
+            log.info("StopLoader finished in {} ms",
                     System.currentTimeMillis() - start);
         }
     }
