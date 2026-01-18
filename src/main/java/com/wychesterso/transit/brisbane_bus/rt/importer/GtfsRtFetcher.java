@@ -1,4 +1,4 @@
-package com.wychesterso.transit.brisbane_bus.rt;
+package com.wychesterso.transit.brisbane_bus.rt.importer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 import org.springframework.web.client.RestTemplate;
+
+import java.time.Instant;
 
 /**
  * Responsible for communicating with the external GTFS-RT HTTP endpoint
@@ -26,12 +28,12 @@ public class GtfsRtFetcher {
             log.info("Fetching GTFS-RT TripUpdates from {}", tripUpdatesUrl);
 
             byte[] bytes = restTemplate.getForObject(tripUpdatesUrl, byte[].class);
-
             FeedMessage feed = FeedMessage.parseFrom(bytes);
 
-            log.info("GTFS-RT feed received: {} entities, timestamp={}",
+            log.info("GTFS-RT feed received: {} entities, timestamp={}, age={}",
                     feed.getEntityCount(),
-                    feed.getHeader().getTimestamp());
+                    feed.getHeader().getTimestamp(),
+                    Instant.now().getEpochSecond() - feed.getHeader().getTimestamp());
 
             return feed;
 

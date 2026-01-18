@@ -3,6 +3,9 @@ package com.wychesterso.transit.brisbane_bus.api.service;
 import com.wychesterso.transit.brisbane_bus.api.dto.StopArrivalDTO;
 import com.wychesterso.transit.brisbane_bus.api.dto.StopArrivalResponse;
 import com.wychesterso.transit.brisbane_bus.api.dto.StopArrivalResponseList;
+import com.wychesterso.transit.brisbane_bus.rt.model.RtStopDelay;
+import com.wychesterso.transit.brisbane_bus.rt.model.TripStopKey;
+import com.wychesterso.transit.brisbane_bus.rt.service.GtfsRtIndexService;
 import com.wychesterso.transit.brisbane_bus.st.repository.StopArrivalRepository;
 import com.wychesterso.transit.brisbane_bus.api.service.time.ServiceClock;
 import com.wychesterso.transit.brisbane_bus.api.service.time.ServiceTimeHelper;
@@ -15,11 +18,13 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class StopArrivalService {
 
     private final StopArrivalRepository repository;
+    private final GtfsRtIndexService rtIndex;
     private final RedisTemplate<String, Object> redis;
 
     private static final ZoneId BRISBANE = ZoneId.of("Australia/Brisbane");
@@ -27,8 +32,10 @@ public class StopArrivalService {
 
     public StopArrivalService(
             StopArrivalRepository repository,
+            GtfsRtIndexService rtIndex,
             RedisTemplate<String, Object> redis) {
         this.repository = repository;
+        this.rtIndex = rtIndex;
         this.redis = redis;
     }
 
@@ -83,20 +90,44 @@ public class StopArrivalService {
 
     private List<StopArrivalResponse> mapDTOtoResponse(List<StopArrivalDTO> arrivals, LocalDate serviceDate) {
 
+        Map<TripStopKey, RtStopDelay> rt = rtIndex.getIndex();
+
         return arrivals.stream()
                 .map(r -> {
-                    LocalDateTime arrival =
-                            serviceDate.atStartOfDay().plusSeconds(r.getArrivalTimeSeconds());
+                    LocalDateTime scheduledArr = serviceDate.atStartOfDay().plusSeconds(r.getArrivalTimeSeconds());
+                    LocalDateTime scheduledDep = serviceDate.atStartOfDay().plusSeconds(r.getDepartureTimeSeconds());
 
-                    LocalDateTime departure =
-                            serviceDate.atStartOfDay().plusSeconds(r.getDepartureTimeSeconds());
+                    RtStopDelay delayInfo = rt.get(new TripStopKey(r.getTripId(), r.getStopId()));
+
+                    boolean hasRt = delayInfo != null;
+
+                    boolean cancelled = hasRt && delayInfo.cancelled();
+                    boolean skipped = hasRt && delayInfo.skipped();
+
+                    Integer arrDelay = hasRt ? delayInfo.arrivalDelaySeconds() : null;
+                    Integer depDelay = hasRt ? delayInfo.departureDelaySeconds() : null;
+
+                    int effectiveArrSeconds = r.getArrivalTimeSeconds() + (arrDelay != null ? arrDelay : 0);
+                    int effectiveDepSeconds = r.getDepartureTimeSeconds() + (depDelay != null ? depDelay : 0);
+
+                    LocalDateTime effectiveArr = serviceDate.atStartOfDay().plusSeconds(effectiveArrSeconds);
+                    LocalDateTime effectiveDep = serviceDate.atStartOfDay().plusSeconds(effectiveDepSeconds);
 
                     return new StopArrivalResponse(
                             r.getTripId(),
                             r.getArrivalTimeSeconds(),
-                            arrival.format(TIME_FMT),
+                            scheduledArr.format(TIME_FMT),
+                            effectiveArrSeconds,
+                            effectiveArr.format(TIME_FMT),
+                            arrDelay,
                             r.getDepartureTimeSeconds(),
-                            departure.format(TIME_FMT)
+                            scheduledDep.format(TIME_FMT),
+                            effectiveDepSeconds,
+                            effectiveDep.format(TIME_FMT),
+                            depDelay,
+                            hasRt,
+                            cancelled,
+                            skipped
                     );
                 })
                 .toList();

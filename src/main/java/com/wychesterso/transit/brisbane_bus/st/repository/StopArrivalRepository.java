@@ -17,6 +17,7 @@ public interface StopArrivalRepository extends JpaRepository<StopTime, StopTimeI
         value = """
             SELECT
                 st.trip_id        AS tripId,
+                st.stop_id        AS stopId,
                 st.arrival_time   AS arrivalTimeSeconds,
                 st.departure_time AS departureTimeSeconds
             FROM stop_times st
@@ -67,6 +68,7 @@ public interface StopArrivalRepository extends JpaRepository<StopTime, StopTimeI
         
             SELECT
                 st.trip_id        AS tripId,
+                st.stop_id        AS stopId,
                 st.arrival_time   AS arrivalTimeSeconds,
                 st.departure_time AS departureTimeSeconds
             FROM stop_times st
