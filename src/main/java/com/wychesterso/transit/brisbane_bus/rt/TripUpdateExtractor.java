@@ -8,13 +8,19 @@ import com.google.transit.realtime.GtfsRealtime.TripUpdate.StopTimeUpdate;
 import com.wychesterso.transit.brisbane_bus.rt.model.RtStopDelay;
 import org.springframework.stereotype.Component;
 
+import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
 public class TripUpdateExtractor {
 
-    public List<RtStopDelay> extract(FeedMessage feed) {
+    private static final ZoneId BRISBANE = ZoneId.of("Australia/Brisbane");
+
+    public List<RtStopDelay> extract(
+            FeedMessage feed,
+            LocalDate serviceDate
+    ) {
         List<RtStopDelay> result = new ArrayList<>();
 
         for (FeedEntity entity : feed.getEntityList()) {
@@ -48,21 +54,21 @@ public class TripUpdateExtractor {
                         stu.getScheduleRelationship() ==
                                 StopTimeUpdate.ScheduleRelationship.SKIPPED;
 
-                Integer arrivalDelay = stu.hasArrival()
-                        && stu.getArrival().hasDelay()
-                        ? stu.getArrival().getDelay()
-                        : null;
+                Integer effectiveArr = getEffectiveSeconds(
+                        stu.hasArrival() ? stu.getArrival().getTime() : null,
+                        serviceDate
+                );
 
-                Integer departureDelay = stu.hasDeparture()
-                        && stu.getDeparture().hasDelay()
-                        ? stu.getDeparture().getDelay()
-                        : null;
+                Integer effectiveDep = getEffectiveSeconds(
+                        stu.hasDeparture() ? stu.getDeparture().getTime() : null,
+                        serviceDate
+                );
 
                 result.add(new RtStopDelay(
                         tripId,
                         stu.getStopId(),
-                        arrivalDelay,
-                        departureDelay,
+                        effectiveArr,
+                        effectiveDep,
                         false,
                         skipped
                 ));
@@ -70,5 +76,22 @@ public class TripUpdateExtractor {
         }
 
         return result;
+    }
+
+    private Integer getEffectiveSeconds(
+            Long epochSeconds,
+            LocalDate serviceDate
+    ) {
+        if (epochSeconds == null || epochSeconds == 0) return null;
+
+        ZonedDateTime localTime = Instant.ofEpochSecond(epochSeconds)
+                        .atZone(BRISBANE);
+
+        return Math.toIntExact(
+                Duration.between(
+                        serviceDate.atStartOfDay(),
+                        localTime.toLocalDateTime()
+                ).getSeconds()
+        );
     }
 }

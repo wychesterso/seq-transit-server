@@ -1,6 +1,6 @@
 package com.wychesterso.transit.brisbane_bus.st.repository;
 
-import com.wychesterso.transit.brisbane_bus.api.dto.StopArrivalDTO;
+import com.wychesterso.transit.brisbane_bus.st.model.StopArrival;
 import com.wychesterso.transit.brisbane_bus.st.model.StopTime;
 import com.wychesterso.transit.brisbane_bus.st.model.StopTimeId;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -28,7 +28,7 @@ public interface StopArrivalRepository extends JpaRepository<StopTime, StopTimeI
         """,
         nativeQuery = true
     )
-    List<StopArrivalDTO> findNextArrivalsForStop(
+    List<StopArrival> findNextArrivalsForStop(
             @Param("stopId") String stopId,
             @Param("now") int now
     );
@@ -82,7 +82,7 @@ public interface StopArrivalRepository extends JpaRepository<StopTime, StopTimeI
         """,
         nativeQuery = true
     )
-    List<StopArrivalDTO> findNextArrivalsForRouteAtStop(
+    List<StopArrival> findNextArrivalsForRouteAtStop(
             @Param("stopId") String stopId,
             @Param("routeId") String routeId,
             @Param("serviceDateInt") int serviceDateInt,

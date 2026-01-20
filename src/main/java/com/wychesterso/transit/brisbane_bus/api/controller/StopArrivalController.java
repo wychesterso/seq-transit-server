@@ -1,4 +1,4 @@
-package com.wychesterso.transit.brisbane_bus.api;
+package com.wychesterso.transit.brisbane_bus.api.controller;
 
 import com.wychesterso.transit.brisbane_bus.api.dto.StopArrivalResponse;
 import com.wychesterso.transit.brisbane_bus.api.service.StopArrivalService;

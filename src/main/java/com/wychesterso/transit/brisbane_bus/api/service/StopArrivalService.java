@@ -1,6 +1,6 @@
 package com.wychesterso.transit.brisbane_bus.api.service;
 
-import com.wychesterso.transit.brisbane_bus.api.dto.StopArrivalDTO;
+import com.wychesterso.transit.brisbane_bus.st.model.StopArrival;
 import com.wychesterso.transit.brisbane_bus.api.dto.StopArrivalResponse;
 import com.wychesterso.transit.brisbane_bus.api.dto.StopArrivalResponseList;
 import com.wychesterso.transit.brisbane_bus.rt.model.RtStopDelay;
@@ -88,7 +88,7 @@ public class StopArrivalService {
         return result;
     }
 
-    private List<StopArrivalResponse> mapDTOtoResponse(List<StopArrivalDTO> arrivals, LocalDate serviceDate) {
+    private List<StopArrivalResponse> mapDTOtoResponse(List<StopArrival> arrivals, LocalDate serviceDate) {
 
         Map<TripStopKey, RtStopDelay> rt = rtIndex.getIndex();
 
@@ -104,8 +104,8 @@ public class StopArrivalService {
                     boolean cancelled = hasRt && delayInfo.cancelled();
                     boolean skipped = hasRt && delayInfo.skipped();
 
-                    Integer arrDelay = hasRt ? delayInfo.arrivalDelaySeconds() : null;
-                    Integer depDelay = hasRt ? delayInfo.departureDelaySeconds() : null;
+                    Integer arrDelay = hasRt ? delayInfo.effectiveArrivalSeconds() : null;
+                    Integer depDelay = hasRt ? delayInfo.effectiveDepartureSeconds() : null;
 
                     int effectiveArrSeconds = r.getArrivalTimeSeconds() + (arrDelay != null ? arrDelay : 0);
                     int effectiveDepSeconds = r.getDepartureTimeSeconds() + (depDelay != null ? depDelay : 0);

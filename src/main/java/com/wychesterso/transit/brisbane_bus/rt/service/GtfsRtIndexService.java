@@ -1,5 +1,7 @@
 package com.wychesterso.transit.brisbane_bus.rt.service;
 
+import com.wychesterso.transit.brisbane_bus.api.service.time.ServiceClock;
+import com.wychesterso.transit.brisbane_bus.api.service.time.ServiceTimeHelper;
 import com.wychesterso.transit.brisbane_bus.rt.GtfsRtSnapshot;
 import com.wychesterso.transit.brisbane_bus.rt.TripUpdateExtractor;
 import com.wychesterso.transit.brisbane_bus.rt.model.RtStopDelay;
@@ -8,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,9 +37,12 @@ public class GtfsRtIndexService {
      * Rebuilds the realtime index from the latest GTFS-RT snapshot.
      */
     public void rebuild() {
-        snapshot.get().ifPresentOrElse(feed -> {
 
-            List<RtStopDelay> delays = extractor.extract(feed);
+        ServiceClock clock = ServiceTimeHelper.now();
+        LocalDate serviceDate = clock.serviceDate();
+
+        snapshot.get().ifPresentOrElse(feed -> {
+            List<RtStopDelay> delays = extractor.extract(feed, serviceDate);
 
             Map<TripStopKey, RtStopDelay> next = new HashMap<>();
 
