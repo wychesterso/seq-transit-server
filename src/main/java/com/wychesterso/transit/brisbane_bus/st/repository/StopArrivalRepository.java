@@ -2,7 +2,6 @@ package com.wychesterso.transit.brisbane_bus.st.repository;
 
 import com.wychesterso.transit.brisbane_bus.st.model.StopArrival;
 import com.wychesterso.transit.brisbane_bus.st.model.StopTime;
-import com.wychesterso.transit.brisbane_bus.st.model.StopTimeId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,22 +10,22 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface StopArrivalRepository extends JpaRepository<StopTime, StopTimeId> {
+public interface StopArrivalRepository extends JpaRepository<StopTime, String> {
 
     @Query(
-        value = """
-            SELECT
-                st.trip_id        AS tripId,
-                st.stop_id        AS stopId,
-                st.arrival_time   AS arrivalTimeSeconds,
-                st.departure_time AS departureTimeSeconds
-            FROM stop_times st
-            WHERE st.stop_id = :stopId
-                AND st.arrival_time >= :now
-            ORDER BY st.arrival_time
-            LIMIT 10
-        """,
-        nativeQuery = true
+            value = """
+                SELECT
+                    st.trip_id        AS tripId,
+                    st.stop_id        AS stopId,
+                    st.arrival_time   AS arrivalTimeSeconds,
+                    st.departure_time AS departureTimeSeconds
+                FROM stop_times st
+                WHERE st.stop_id = :stopId
+                    AND st.arrival_time >= :now
+                ORDER BY st.arrival_time
+                LIMIT 10
+            """,
+            nativeQuery = true
     )
     List<StopArrival> findNextArrivalsForStop(
             @Param("stopId") String stopId,
@@ -34,53 +33,53 @@ public interface StopArrivalRepository extends JpaRepository<StopTime, StopTimeI
     );
 
     @Query(
-        value = """
-            WITH active_services AS (
-                SELECT service_id
-                FROM calendar
-                WHERE
-                    start_date <= TO_DATE(CAST(:serviceDateInt AS text), 'YYYYMMDD')
-                    AND end_date >= TO_DATE(CAST(:serviceDateInt AS text), 'YYYYMMDD')
-                    AND CASE EXTRACT(DOW FROM TO_DATE(CAST(:serviceDateInt AS text), 'YYYYMMDD'))
-                        WHEN 0 THEN sunday
-                        WHEN 1 THEN monday
-                        WHEN 2 THEN tuesday
-                        WHEN 3 THEN wednesday
-                        WHEN 4 THEN thursday
-                        WHEN 5 THEN friday
-                        WHEN 6 THEN saturday
-                    END IS TRUE
+            value = """
+                WITH active_services AS (
+                    SELECT service_id
+                    FROM calendar
+                    WHERE
+                        start_date <= TO_DATE(CAST(:serviceDateInt AS text), 'YYYYMMDD')
+                        AND end_date >= TO_DATE(CAST(:serviceDateInt AS text), 'YYYYMMDD')
+                        AND CASE EXTRACT(DOW FROM TO_DATE(CAST(:serviceDateInt AS text), 'YYYYMMDD'))
+                            WHEN 0 THEN sunday
+                            WHEN 1 THEN monday
+                            WHEN 2 THEN tuesday
+                            WHEN 3 THEN wednesday
+                            WHEN 4 THEN thursday
+                            WHEN 5 THEN friday
+                            WHEN 6 THEN saturday
+                        END IS TRUE
         
-                UNION
+                    UNION
         
-                SELECT service_id
-                FROM calendar_dates
-                WHERE date = TO_DATE(CAST(:serviceDateInt AS text), 'YYYYMMDD')
-                    AND exception_type = 1
+                    SELECT service_id
+                    FROM calendar_dates
+                    WHERE date = TO_DATE(CAST(:serviceDateInt AS text), 'YYYYMMDD')
+                        AND exception_type = 1
         
-                EXCEPT
+                    EXCEPT
         
-                SELECT service_id
-                FROM calendar_dates
-                WHERE date = TO_DATE(CAST(:serviceDateInt AS text), 'YYYYMMDD')
-                AND exception_type = 2
-            )
+                    SELECT service_id
+                    FROM calendar_dates
+                    WHERE date = TO_DATE(CAST(:serviceDateInt AS text), 'YYYYMMDD')
+                    AND exception_type = 2
+                )
         
-            SELECT
-                st.trip_id        AS tripId,
-                st.stop_id        AS stopId,
-                st.arrival_time   AS arrivalTimeSeconds,
-                st.departure_time AS departureTimeSeconds
-            FROM stop_times st
-            JOIN trips t ON t.trip_id = st.trip_id
-            WHERE st.stop_id = :stopId
-                AND t.route_id = :routeId
-                AND t.service_id IN (SELECT service_id FROM active_services)
-                AND st.arrival_time >= :now
-            ORDER BY st.arrival_time
-            LIMIT 3
-        """,
-        nativeQuery = true
+                SELECT
+                    st.trip_id        AS tripId,
+                    st.stop_id        AS stopId,
+                    st.arrival_time   AS arrivalTimeSeconds,
+                    st.departure_time AS departureTimeSeconds
+                FROM stop_times st
+                JOIN trips t ON t.trip_id = st.trip_id
+                WHERE st.stop_id = :stopId
+                    AND t.route_id = :routeId
+                    AND t.service_id IN (SELECT service_id FROM active_services)
+                    AND st.arrival_time >= :now
+                ORDER BY st.arrival_time
+                LIMIT 3
+            """,
+            nativeQuery = true
     )
     List<StopArrival> findNextArrivalsForRouteAtStop(
             @Param("stopId") String stopId,

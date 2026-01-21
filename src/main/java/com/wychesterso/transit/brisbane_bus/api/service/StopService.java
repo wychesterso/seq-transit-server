@@ -1,6 +1,7 @@
 package com.wychesterso.transit.brisbane_bus.api.service;
 
 import com.wychesterso.transit.brisbane_bus.api.dto.StopResponse;
+import com.wychesterso.transit.brisbane_bus.api.exception.NotFoundException;
 import com.wychesterso.transit.brisbane_bus.st.model.Stop;
 import com.wychesterso.transit.brisbane_bus.st.repository.StopRepository;
 import org.springframework.stereotype.Service;
@@ -16,25 +17,29 @@ public class StopService {
         this.repository = repository;
     }
 
-    public List<StopResponse> getAllStops() {
-        List<Stop> stops = repository.getStops();
-        return mapDTOToResponse(stops);
+    public StopResponse getStop(String stopId) {
+        return repository.findStopById(stopId)
+                .stream()
+                .findFirst()
+                .map(this::toResponse)
+                .orElseThrow(() -> new NotFoundException("Stop not found: " + stopId));
     }
 
-    public List<StopResponse> getStop(String stopId) {
-        List<Stop> stops = repository.findStopById(stopId);
-        return mapDTOToResponse(stops);
+    public List<StopResponse> getStopsForRoute(String routeId) {
+        return repository.findStopsForRoute(routeId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
-    private List<StopResponse> mapDTOToResponse(List<Stop> stops) {
-        return stops.stream()
-                .map(s -> new StopResponse(
-                        s.getStopId(),
-                        s.getStopCode(),
-                        s.getStopName(),
-                        s.getStopLat(),
-                        s.getStopLon(),
-                        s.getZoneId()
-                )).toList();
+    private StopResponse toResponse(Stop s) {
+        return new StopResponse(
+                s.getStopId(),
+                s.getStopCode(),
+                s.getStopName(),
+                s.getStopLat(),
+                s.getStopLon(),
+                s.getZoneId()
+        );
     }
 }

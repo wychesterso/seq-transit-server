@@ -17,7 +17,7 @@ public class StopController {
     }
 
     @GetMapping("/{stopId}")
-    public List<StopResponse> getStop(
+    public StopResponse getStop(
             @PathVariable String stopId) {
         return stopService.getStop(stopId);
     }
