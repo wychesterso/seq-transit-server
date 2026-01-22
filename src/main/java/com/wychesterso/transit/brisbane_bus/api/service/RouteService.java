@@ -1,42 +1,53 @@
 package com.wychesterso.transit.brisbane_bus.api.service;
 
-import com.wychesterso.transit.brisbane_bus.api.dto.RouteResponse;
-import com.wychesterso.transit.brisbane_bus.api.dto.StopResponse;
-import com.wychesterso.transit.brisbane_bus.st.model.Route;
-import com.wychesterso.transit.brisbane_bus.st.repository.RouteRepository;
+import com.wychesterso.transit.brisbane_bus.st.model.StopList;
+import com.wychesterso.transit.brisbane_bus.st.repository.TripRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class RouteService {
 
-    private final RouteRepository repository;
-    private final StopService stopService;
+    private final TripRepository tripRepository;
 
-    public RouteService(RouteRepository repository, StopService stopService) {
-        this.repository = repository;
-        this.stopService = stopService;
+    public RouteService(TripRepository tripRepository) {
+        this.tripRepository = tripRepository;
     }
 
-    public List<RouteResponse> getRoutesByShortName(String routeShortName) {
-        return repository.findRoutesByShortName(routeShortName)
-                .stream()
-                .map(this::toResponse)
-                .toList();
-    }
+    private List<String> getCanonicalStopList(
+            String routeShortName,
+            int directionId,
+            String tripHeadsign) {
 
-    public List<StopResponse> getStopsForRoute(String routeId) {
-        return stopService.getStopsForRoute(routeId);
-    }
+        List<StopList> rows = tripRepository.getStopSequences(
+                        routeShortName,
+                        directionId,
+                        tripHeadsign
+                );
 
-    private RouteResponse toResponse(Route r) {
-        return new RouteResponse(
-                r.getRouteId(),
-                r.getRouteShortName(),
-                r.getRouteLongName(),
-                r.getRouteColor(),
-                r.getRouteTextColor()
-        );
+        // group by trip_id
+        Map<String, List<StopList>> byTrip = rows.stream()
+                .collect(Collectors.groupingBy(StopList::getTripId));
+
+        // build stop lists
+        Map<List<String>, Long> frequency = byTrip.values().stream()
+                .map(stops -> stops.stream()
+                        .sorted(Comparator.comparingInt(StopList::getStopSequence))
+                        .map(StopList::getStopId)
+                        .toList()
+                )
+                .collect(Collectors.groupingBy(
+                        Function.identity(),
+                        Collectors.counting()
+                ));
+
+        // return most frequently occurring stop list
+        return frequency.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(List.of());
     }
 }
