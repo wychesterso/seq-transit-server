@@ -44,6 +44,12 @@ public class RouteLoader {
             PGConnection pg = conn.unwrap(PGConnection.class);
             CopyManager copy = pg.getCopyAPI();
 
+            // drop indexes to speed up bulk insert
+            try (Statement st = conn.createStatement()) {
+                log.info("Dropping indexes...");
+                st.execute("DROP INDEX IF EXISTS idx_routes_short_name");
+            }
+
             // clear table
             log.info("Truncating routes...");
             try (Statement st = conn.createStatement()) {
@@ -72,6 +78,16 @@ public class RouteLoader {
 
                 log.info("COPY routes finished: {} rows in {} ms",
                         rows, System.currentTimeMillis() - copyStart);
+            }
+
+            // recreate indexes
+            try (Statement st = conn.createStatement()) {
+                log.info("Recreating indexes...");
+                st.execute("""
+                    CREATE INDEX IF NOT EXISTS idx_routes_short_name
+                    ON routes (route_short_name text_pattern_ops);
+                """);
+                log.info("Indexes recreated");
             }
 
             log.info("RouteLoader finished in {} ms",

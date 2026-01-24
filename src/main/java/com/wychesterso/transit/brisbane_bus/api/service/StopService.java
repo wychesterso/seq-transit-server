@@ -11,10 +11,27 @@ import java.util.List;
 @Service
 public class StopService {
 
+    private static final double LATDELTA = 0.009;
+
     private final StopRepository repository;
 
     public StopService(StopRepository repository) {
         this.repository = repository;
+    }
+
+    public List<BriefStopResponse> getAdjacentStops(Double lat, Double lon) {
+        double lonDelta = 0.009 / Math.cos(Math.toRadians(lat));
+
+        List<Stop> adjacentStops = repository.findAdjacentStops(
+                lat,
+                lon,
+                lat - LATDELTA,
+                lon - lonDelta,
+                lat + LATDELTA,
+                lon + lonDelta
+        );
+
+        return adjacentStops.stream().map(this::toResponse).toList();
     }
 
     public BriefStopResponse getStop(String stopId) {
@@ -23,13 +40,6 @@ public class StopService {
                 .findFirst()
                 .map(this::toResponse)
                 .orElseThrow(() -> new NotFoundException("Stop not found: " + stopId));
-    }
-
-    public List<BriefStopResponse> getStopsForRoute(String routeId) {
-        return repository.findStopsForRoute(routeId)
-                .stream()
-                .map(this::toResponse)
-                .toList();
     }
 
     private BriefStopResponse toResponse(Stop s) {
