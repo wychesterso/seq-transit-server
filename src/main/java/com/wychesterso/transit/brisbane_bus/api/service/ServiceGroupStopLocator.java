@@ -4,11 +4,11 @@ import com.wychesterso.transit.brisbane_bus.api.dto.BriefStopResponse;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ServiceStopLocator {
+public class ServiceGroupStopLocator {
 
     private final StopService stopService;
 
-    public ServiceStopLocator(StopService stopService) {
+    public ServiceGroupStopLocator(StopService stopService) {
         this.stopService = stopService;
     }
 

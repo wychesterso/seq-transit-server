@@ -26,7 +26,7 @@ public class ArrivalsService {
     private final ArrivalsRepository repository;
 
     private final StopService stopService;
-    private final StopListService stopListService;
+    private final StopSequenceService stopSequenceService;
 
     private final GtfsRtIndexService rtIndex;
     private final RedisTemplate<String, Object> redis;
@@ -37,12 +37,12 @@ public class ArrivalsService {
     public ArrivalsService(
             ArrivalsRepository repository,
             StopService stopService,
-            StopListService stopListService,
+            StopSequenceService stopSequenceService,
             GtfsRtIndexService rtIndex,
             RedisTemplate<String, Object> redis) {
         this.repository = repository;
         this.stopService = stopService;
-        this.stopListService = stopListService;
+        this.stopSequenceService = stopSequenceService;
         this.rtIndex = rtIndex;
         this.redis = redis;
     }
@@ -56,14 +56,14 @@ public class ArrivalsService {
         int nowSeconds = clock.serviceSeconds();
         LocalDate serviceDate = clock.serviceDate();
 
-        String key = "stop:%s:service:%s:%s:%d:%s"
+        String key = "stop:arrivals-for-service:%s:%s:%s:%d:%s"
                 .formatted(stopId, routeShortName, tripHeadsign, directionId, serviceDate);
 
         @SuppressWarnings("unchecked")
         ArrivalsAtStopResponse cached = (ArrivalsAtStopResponse) redis.opsForValue().get(key);
 
         if (cached != null) {
-            System.out.println("Using cached Redis result");
+            System.out.println("Using cached Redis result: " + key);
             return cached;
         }
 
@@ -76,7 +76,7 @@ public class ArrivalsService {
                         directionId,
                         serviceDateToInt(serviceDate),
                         nowSeconds),
-                stopListService.getCanonicalStopList(
+                stopSequenceService.getCanonicalStopSequence(
                         routeShortName,
                         tripHeadsign,
                         directionId),

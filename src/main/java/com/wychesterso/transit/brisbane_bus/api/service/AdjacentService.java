@@ -7,6 +7,7 @@ import com.wychesterso.transit.brisbane_bus.api.dto.ServiceId;
 import com.wychesterso.transit.brisbane_bus.st.loader.RouteLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -19,13 +20,17 @@ public class AdjacentService {
 
     private final StopService stopService;
     private final ServiceGroupService serviceGroupService;
+
+    private final RedisTemplate<String, Object> redis;
     private static final Logger log = LoggerFactory.getLogger(RouteLoader.class);
 
     public AdjacentService(
             StopService stopService,
-            ServiceGroupService serviceGroupService) {
+            ServiceGroupService serviceGroupService,
+            RedisTemplate<String, Object> redis) {
         this.stopService = stopService;
         this.serviceGroupService = serviceGroupService;
+        this.redis = redis;
     }
 
     public List<BriefServiceResponse> getAdjacentServices(Double lat, Double lon) {

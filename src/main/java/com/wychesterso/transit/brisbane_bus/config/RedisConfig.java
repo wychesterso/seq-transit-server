@@ -1,11 +1,18 @@
 package com.wychesterso.transit.brisbane_bus.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.wychesterso.transit.brisbane_bus.api.service.cache.ServiceGroupDTO;
+import com.wychesterso.transit.brisbane_bus.api.service.cache.ServiceGroupList;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+
+import java.util.List;
 
 @Configuration
 public class RedisConfig {
