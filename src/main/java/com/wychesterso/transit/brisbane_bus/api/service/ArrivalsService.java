@@ -101,7 +101,7 @@ public class ArrivalsService {
         Map<TripStopKey, RtStopDelay> rt = rtIndex.getIndex();
 
         return new ArrivalsAtStopResponse(
-                stopService.getStopInfo(arrivals.get(0).getStopId()),
+                stopService.getStopInfo(stopId),
                 canonicalStopList.get(stopId),
                 arrivals
                         .stream()
@@ -116,11 +116,25 @@ public class ArrivalsService {
                             boolean cancelled = hasRt && delayInfo.cancelled();
                             boolean skipped = hasRt && delayInfo.skipped();
 
-                            Integer arrDelay = hasRt ? delayInfo.effectiveArrivalSeconds() : null;
-                            Integer depDelay = hasRt ? delayInfo.effectiveDepartureSeconds() : null;
+                            int scheduledArrSeconds = r.getArrivalTimeSeconds();
+                            int scheduledDepSeconds = r.getDepartureTimeSeconds();
 
-                            int effectiveArrSeconds = r.getArrivalTimeSeconds() + (arrDelay != null ? arrDelay : 0);
-                            int effectiveDepSeconds = r.getDepartureTimeSeconds() + (depDelay != null ? depDelay : 0);
+                            Integer rtArrSeconds = hasRt ? delayInfo.effectiveArrivalSeconds() : null;
+                            Integer rtDepSeconds = hasRt ? delayInfo.effectiveDepartureSeconds() : null;
+
+                            int effectiveArrSeconds = rtArrSeconds != null
+                                    ? rtArrSeconds
+                                    : scheduledArrSeconds;
+                            int effectiveDepSeconds = rtDepSeconds != null
+                                    ? rtDepSeconds
+                                    : scheduledDepSeconds;
+
+                            Integer arrDelay = rtArrSeconds != null
+                                    ? effectiveArrSeconds - scheduledArrSeconds
+                                    : null;
+                            Integer depDelay = rtDepSeconds != null
+                                    ? effectiveDepSeconds - scheduledDepSeconds
+                                    : null;
 
                             LocalDateTime effectiveArr = serviceDate.atStartOfDay().plusSeconds(effectiveArrSeconds);
                             LocalDateTime effectiveDep = serviceDate.atStartOfDay().plusSeconds(effectiveDepSeconds);

@@ -75,8 +75,8 @@ public interface ArrivalsRepository extends JpaRepository<StopTime, String> {
                 JOIN routes r ON t.route_id = r.route_id
                 WHERE st.stop_id = :stopId
                     AND r.route_short_name = :routeShortName
-                    AND r.trip_headsign = :tripHeadsign
-                    AND r.direction_id = :directionId
+                    AND t.trip_headsign = :tripHeadsign
+                    AND t.direction_id = :directionId
                     AND t.service_id IN (SELECT service_id FROM active_services)
                     AND st.arrival_time >= :now
                 ORDER BY st.arrival_time

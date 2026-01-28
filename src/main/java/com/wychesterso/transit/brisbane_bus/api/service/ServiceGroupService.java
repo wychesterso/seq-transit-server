@@ -51,6 +51,21 @@ public class ServiceGroupService {
             ServiceGroup serviceGroup,
             double lat,
             double lon) {
+
+        BriefStopResponse adjacentStop = serviceStopLocator.getAdjacentStopForService(
+                serviceGroup.getRouteShortName(),
+                serviceGroup.getTripHeadsign(),
+                serviceGroup.getDirectionId(),
+                lat,
+                lon
+        );
+        ArrivalsAtStopResponse arrivalsAtStopResponse = arrivalsService.getNextArrivalsForServiceAtStop(
+                adjacentStop.stopId(),
+                serviceGroup.getRouteShortName(),
+                serviceGroup.getTripHeadsign(),
+                serviceGroup.getDirectionId()
+        );
+
         return new BriefServiceResponse(
                 new ServiceId(
                         serviceGroup.getRouteShortName(),
@@ -59,17 +74,7 @@ public class ServiceGroupService {
                 ),
                 serviceGroup.getRouteShortName(),
                 serviceGroup.getRouteLongName(),
-                new ArrivalsAtStopResponse(
-                        serviceStopLocator.getAdjacentStopForService(
-                                serviceGroup.getRouteShortName(),
-                                serviceGroup.getTripHeadsign(),
-                                serviceGroup.getDirectionId(),
-                                lat,
-                                lon
-                        ),
-                        null,
-                        null
-                ) // TODO: arrivalsAtNearestStop
+                arrivalsAtStopResponse
         );
     }
 }

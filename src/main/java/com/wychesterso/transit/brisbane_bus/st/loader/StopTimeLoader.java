@@ -47,6 +47,7 @@ public class StopTimeLoader {
                 log.info("Dropping indexes...");
                 st.execute("DROP INDEX IF EXISTS idx_stop_times_stop_id");
                 st.execute("DROP INDEX IF EXISTS idx_stop_times_trip_id");
+                st.execute("DROP INDEX IF EXISTS idx_stop_times_stop_trip");
                 st.execute("DROP INDEX IF EXISTS idx_stop_times_stop_arrival");
             }
 
@@ -123,6 +124,8 @@ public class StopTimeLoader {
                     ON stop_times (stop_id);
                     CREATE INDEX IF NOT EXISTS idx_stop_times_trip_id
                     ON stop_times (trip_id);
+                    CREATE INDEX IF NOT EXISTS idx_stop_times_stop_trip
+                    ON stop_times (stop_id, trip_id);
                     CREATE INDEX IF NOT EXISTS idx_stop_times_stop_arrival
                     ON stop_times (stop_id, arrival_time);
                 """);
