@@ -19,7 +19,7 @@ public class ServiceGroupStopLocator {
             Double lat,
             Double lon) {
 
-        return stopService.getAdjacentStopForService(
+        return stopService.getAdjacentStopForServiceGroup(
                 routeShortName,
                 tripHeadsign,
                 directionId,

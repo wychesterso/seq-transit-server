@@ -97,36 +97,4 @@ public interface StopRepository extends JpaRepository<StopTime, String> {
             @Param("minLon") Double minLon,
             @Param("maxLon") Double maxLon
     );
-
-
-
-
-
-    @Query(
-            value = """
-                SELECT
-                    s.stop_id AS stopId,
-                    s.stop_code AS stopCode,
-                    s.stop_name AS stopName,
-                    s.stop_lat AS stopLat,
-                    s.stop_lon AS stopLon,
-                    s.zone_id AS zoneId
-                FROM stops s
-                JOIN stop_times st ON s.stop_id = st.stop_id
-                JOIN trips t ON t.trip_id = st.trip_id
-                WHERE t.route_id = :routeId
-                GROUP BY
-                    s.stop_id,
-                    s.stop_code,
-                    s.stop_name,
-                    s.stop_lat,
-                    s.stop_lon,
-                    s.zone_id
-                ORDER BY MIN(st.stop_sequence)
-        """,
-            nativeQuery = true
-    )
-    List<Stop> findStopsForRoute(
-            @Param("routeId") String routeId
-    );
 }

@@ -13,17 +13,15 @@ import java.util.List;
 public class StopController {
 
     private final StopService stopService;
-    private final AdjacentService adjacentService;
 
     public StopController(StopService stopService, AdjacentService adjacentService) {
         this.stopService = stopService;
-        this.adjacentService = adjacentService;
     }
 
     @GetMapping("/nearest")
     public List<BriefStopResponse> getNearestStops(
             @RequestParam(required = true) Double lat,
             @RequestParam(required = true) Double lon) {
-        return adjacentService.getAdjacentStopsBrief(lat, lon);
+        return stopService.getAdjacentStops(lat, lon);
     }
 }

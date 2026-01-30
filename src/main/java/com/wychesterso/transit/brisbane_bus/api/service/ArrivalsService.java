@@ -101,7 +101,7 @@ public class ArrivalsService {
         Map<TripStopKey, RtStopDelay> rt = rtIndex.getIndex();
 
         return new ArrivalsAtStopResponse(
-                stopService.getStopInfo(stopId),
+                stopService.getStop(stopId),
                 canonicalStopList.get(stopId),
                 arrivals
                         .stream()

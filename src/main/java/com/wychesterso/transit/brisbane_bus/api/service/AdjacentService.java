@@ -2,7 +2,6 @@ package com.wychesterso.transit.brisbane_bus.api.service;
 
 import com.wychesterso.transit.brisbane_bus.api.dto.BriefServiceResponse;
 import com.wychesterso.transit.brisbane_bus.api.dto.BriefStopResponse;
-import com.wychesterso.transit.brisbane_bus.api.dto.FullStopResponse;
 import com.wychesterso.transit.brisbane_bus.api.dto.ServiceId;
 import com.wychesterso.transit.brisbane_bus.st.loader.RouteLoader;
 import org.slf4j.Logger;
@@ -57,23 +56,5 @@ public class AdjacentService {
         }
 
         return new ArrayList<>(unique.values());
-    }
-
-    public List<BriefStopResponse> getAdjacentStopsBrief(Double lat, Double lon) {
-        return stopService.getAdjacentStops(lat, lon);
-    }
-
-    public BriefStopResponse getAdjacentStopForService(
-            String routeShortName,
-            String tripHeadsign,
-            int directionId,
-            Double lat,
-            Double lon) {
-        return stopService.getAdjacentStopForService(
-                routeShortName,
-                tripHeadsign,
-                directionId,
-                lat,
-                lon);
     }
 }
