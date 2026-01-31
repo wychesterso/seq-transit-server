@@ -1,18 +1,17 @@
 package com.wychesterso.transit.brisbane_bus.api.service;
 
-import com.wychesterso.transit.brisbane_bus.api.dto.ArrivalsAtStopResponse;
+import com.wychesterso.transit.brisbane_bus.api.cache.ArrivalsCache;
+import com.wychesterso.transit.brisbane_bus.api.controller.dto.ArrivalsAtStopResponse;
 import com.wychesterso.transit.brisbane_bus.st.model.StopArrival;
-import com.wychesterso.transit.brisbane_bus.api.dto.ArrivalResponse;
+import com.wychesterso.transit.brisbane_bus.api.controller.dto.ArrivalResponse;
 import com.wychesterso.transit.brisbane_bus.rt.model.RtStopDelay;
 import com.wychesterso.transit.brisbane_bus.rt.model.TripStopKey;
 import com.wychesterso.transit.brisbane_bus.rt.service.GtfsRtIndexService;
-import com.wychesterso.transit.brisbane_bus.st.repository.ArrivalsRepository;
+import com.wychesterso.transit.brisbane_bus.api.repository.ArrivalsRepository;
 import com.wychesterso.transit.brisbane_bus.api.service.time.ServiceClock;
 import com.wychesterso.transit.brisbane_bus.api.service.time.ServiceTimeHelper;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -24,50 +23,46 @@ import java.util.Map;
 public class ArrivalsService {
 
     private final ArrivalsRepository repository;
+    private final ArrivalsCache cache;
 
     private final StopService stopService;
     private final StopSequenceService stopSequenceService;
 
     private final GtfsRtIndexService rtIndex;
-    private final RedisTemplate<String, Object> redis;
 
     private static final ZoneId BRISBANE = ZoneId.of("Australia/Brisbane");
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm:ss");
 
     public ArrivalsService(
             ArrivalsRepository repository,
+            ArrivalsCache cache,
             StopService stopService,
             StopSequenceService stopSequenceService,
-            GtfsRtIndexService rtIndex,
-            RedisTemplate<String, Object> redis) {
+            GtfsRtIndexService rtIndex
+    ) {
         this.repository = repository;
+        this.cache = cache;
         this.stopService = stopService;
         this.stopSequenceService = stopSequenceService;
         this.rtIndex = rtIndex;
-        this.redis = redis;
     }
 
     public ArrivalsAtStopResponse getNextArrivalsForServiceAtStop(
             String stopId,
             String routeShortName,
             String tripHeadsign,
-            Integer directionId) {
+            Integer directionId
+    ) {
         ServiceClock clock = ServiceTimeHelper.now();
         int nowSeconds = clock.serviceSeconds();
         LocalDate serviceDate = clock.serviceDate();
 
-        String key = "stop:arrivals-for-service:%s:%s:%s:%d:%s"
-                .formatted(stopId, routeShortName, tripHeadsign, directionId, serviceDate);
-
         @SuppressWarnings("unchecked")
-        ArrivalsAtStopResponse cached = (ArrivalsAtStopResponse) redis.opsForValue().get(key);
+        ArrivalsAtStopResponse response = cache.getNextArrivalsForServiceAtStop(
+                stopId, routeShortName, tripHeadsign, directionId, serviceDate);
+        if (response != null) return response;
 
-        if (cached != null) {
-            System.out.println("Using cached Redis result: " + key);
-            return cached;
-        }
-
-        ArrivalsAtStopResponse result = mapDTOtoResponse(
+        response = toArrivalsAtStopResponse(
                 stopId,
                 repository.findNextArrivalsForServiceAtStop(
                         stopId,
@@ -82,17 +77,13 @@ public class ArrivalsService {
                         directionId),
                 serviceDate
         );
+        cache.cacheNextArrivalsForServiceAtStop(
+                stopId, routeShortName, tripHeadsign, directionId, serviceDate, response);
 
-        redis.opsForValue().set(
-                key,
-                result,
-                Duration.ofSeconds(30) // TTL
-        );
-
-        return result;
+        return response;
     }
 
-    private ArrivalsAtStopResponse mapDTOtoResponse(
+    private ArrivalsAtStopResponse toArrivalsAtStopResponse(
             String stopId,
             List<StopArrival> arrivals,
             Map<String, Integer> canonicalStopList,

@@ -1,6 +1,6 @@
 package com.wychesterso.transit.brisbane_bus.api.cache.dto;
 
-import com.wychesterso.transit.brisbane_bus.api.dto.BriefStopResponse;
+import com.wychesterso.transit.brisbane_bus.api.controller.dto.BriefStopResponse;
 
 import java.util.List;
 

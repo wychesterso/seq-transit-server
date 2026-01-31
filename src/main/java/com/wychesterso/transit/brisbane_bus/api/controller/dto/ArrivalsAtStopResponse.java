@@ -1,4 +1,4 @@
-package com.wychesterso.transit.brisbane_bus.api.dto;
+package com.wychesterso.transit.brisbane_bus.api.controller.dto;
 
 import java.util.List;
 

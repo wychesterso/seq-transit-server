@@ -1,7 +1,6 @@
 package com.wychesterso.transit.brisbane_bus.api.controller;
 
-import com.wychesterso.transit.brisbane_bus.api.dto.BriefStopResponse;
-import com.wychesterso.transit.brisbane_bus.api.dto.FullStopResponse;
+import com.wychesterso.transit.brisbane_bus.api.controller.dto.BriefStopResponse;
 import com.wychesterso.transit.brisbane_bus.api.service.AdjacentService;
 import com.wychesterso.transit.brisbane_bus.api.service.StopService;
 import org.springframework.web.bind.annotation.*;

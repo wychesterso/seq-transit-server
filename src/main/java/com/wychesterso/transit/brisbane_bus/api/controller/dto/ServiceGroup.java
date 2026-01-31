@@ -1,6 +1,6 @@
-package com.wychesterso.transit.brisbane_bus.api.dto;
+package com.wychesterso.transit.brisbane_bus.api.controller.dto;
 
-public record ServiceId(
+public record ServiceGroup(
         String routeShortName,
         String tripHeadsign,
         int directionId

@@ -1,4 +1,4 @@
-package com.wychesterso.transit.brisbane_bus.api.dto;
+package com.wychesterso.transit.brisbane_bus.api.cache.dto;
 
 import com.wychesterso.transit.brisbane_bus.st.model.ServiceGroupAtStop;
 

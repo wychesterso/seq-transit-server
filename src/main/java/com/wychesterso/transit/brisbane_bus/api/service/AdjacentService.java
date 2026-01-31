@@ -1,8 +1,8 @@
 package com.wychesterso.transit.brisbane_bus.api.service;
 
-import com.wychesterso.transit.brisbane_bus.api.dto.BriefServiceResponse;
-import com.wychesterso.transit.brisbane_bus.api.dto.BriefStopResponse;
-import com.wychesterso.transit.brisbane_bus.api.dto.ServiceId;
+import com.wychesterso.transit.brisbane_bus.api.controller.dto.BriefServiceResponse;
+import com.wychesterso.transit.brisbane_bus.api.controller.dto.BriefStopResponse;
+import com.wychesterso.transit.brisbane_bus.api.controller.dto.ServiceGroup;
 import com.wychesterso.transit.brisbane_bus.st.loader.RouteLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,17 +18,17 @@ import java.util.Map;
 public class AdjacentService {
 
     private final StopService stopService;
-    private final ServiceGroupService serviceGroupService;
+    private final ServiceGroupWithArrivalsService serviceGroupWithArrivalsService;
 
     private final RedisTemplate<String, Object> redis;
     private static final Logger log = LoggerFactory.getLogger(RouteLoader.class);
 
     public AdjacentService(
             StopService stopService,
-            ServiceGroupService serviceGroupService,
+            ServiceGroupWithArrivalsService serviceGroupWithArrivalsService,
             RedisTemplate<String, Object> redis) {
         this.stopService = stopService;
-        this.serviceGroupService = serviceGroupService;
+        this.serviceGroupWithArrivalsService = serviceGroupWithArrivalsService;
         this.redis = redis;
     }
 
@@ -43,11 +43,11 @@ public class AdjacentService {
         log.info("getAdjacentStops returned {} stops in {} ms",
                 stopIds.size(), System.currentTimeMillis() - start);
 
-        Map<ServiceId, BriefServiceResponse> unique = new LinkedHashMap<>();
+        Map<ServiceGroup, BriefServiceResponse> unique = new LinkedHashMap<>();
 
         start = System.currentTimeMillis();
         log.info("Starting getServicesAtStops...");
-        List<BriefServiceResponse> services = serviceGroupService.getServicesAtStops(stopIds, lat, lon);
+        List<BriefServiceResponse> services = serviceGroupWithArrivalsService.getServicesAtStops(stopIds, lat, lon);
         log.info("getServicesAtStops returned {} services for {} stops in {} ms",
                 services.size(), stopIds.size(), System.currentTimeMillis() - start);
 

@@ -1,4 +1,4 @@
-package com.wychesterso.transit.brisbane_bus.api.dto;
+package com.wychesterso.transit.brisbane_bus.api.controller.dto;
 
 import com.wychesterso.transit.brisbane_bus.st.model.Stop;
 

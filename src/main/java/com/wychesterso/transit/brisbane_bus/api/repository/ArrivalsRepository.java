@@ -1,4 +1,4 @@
-package com.wychesterso.transit.brisbane_bus.st.repository;
+package com.wychesterso.transit.brisbane_bus.api.repository;
 
 import com.wychesterso.transit.brisbane_bus.st.model.StopArrival;
 import com.wychesterso.transit.brisbane_bus.st.model.StopTime;

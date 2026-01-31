@@ -1,9 +1,9 @@
-package com.wychesterso.transit.brisbane_bus.api.dto;
+package com.wychesterso.transit.brisbane_bus.api.controller.dto;
 
 import java.util.List;
 
 public record FullServiceResponse(
-        ServiceId routeGroup,
+        ServiceGroup serviceGroup,
         String routeShortName,
         String routeLongName,
         String routeColor,

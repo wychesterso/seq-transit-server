@@ -3,8 +3,7 @@ package com.wychesterso.transit.brisbane_bus.api.cache;
 import com.wychesterso.transit.brisbane_bus.api.cache.dto.ServiceGroupAtStopList;
 import com.wychesterso.transit.brisbane_bus.api.cache.dto.ServiceGroupDTO;
 import com.wychesterso.transit.brisbane_bus.api.cache.dto.ServiceGroupList;
-import com.wychesterso.transit.brisbane_bus.api.dto.ServiceGroupAtStopDTO;
-import com.wychesterso.transit.brisbane_bus.st.repository.ServiceGroupRepository;
+import com.wychesterso.transit.brisbane_bus.api.cache.dto.ServiceGroupAtStopDTO;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -16,73 +15,82 @@ public class ServiceGroupCache {
 
     private static final Duration TTL = Duration.ofHours(24);
 
-    private final ServiceGroupRepository repository;
     private final RedisTemplate<String, Object> redis;
 
-    public ServiceGroupCache(
-            ServiceGroupRepository repository,
-            RedisTemplate<String, Object> redis
-    ) {
-        this.repository = repository;
+    public ServiceGroupCache(RedisTemplate<String, Object> redis) {
         this.redis = redis;
     }
 
-    /**
-     * Get a list of services, filtered by prefix
-     * @param prefix the prefix search term
-     * @return list of service data objects
-     */
+    public ServiceGroupDTO getServiceInfo(
+            String routeShortName, String tripHeadsign, Integer directionId
+    ) {
+        String key = getServiceInfoKey(routeShortName, tripHeadsign, directionId);
+
+        @SuppressWarnings("unchecked")
+        ServiceGroupDTO cached = (ServiceGroupDTO) redis.opsForValue().get(key);
+        return cached;
+    }
+
+    public void cacheServiceInfo(
+            String routeShortName, String tripHeadsign, Integer directionId,
+            ServiceGroupDTO serviceInfo
+    ) {
+        String key = getServiceInfoKey(routeShortName, tripHeadsign, directionId);
+
+        redis.opsForValue().set(
+                key,
+                serviceInfo,
+                TTL);
+    }
+
+    private String getServiceInfoKey(
+            String routeShortName, String tripHeadsign, Integer directionId
+    ) {
+        return "service:%s:%s:%d:info".formatted(routeShortName, tripHeadsign, directionId);
+    }
+
     public List<ServiceGroupDTO> getServicesByPrefix(String prefix) {
-        String key = keyByPrefix(prefix);
+        String key = getServicesByPrefixKey(prefix);
 
         @SuppressWarnings("unchecked")
         ServiceGroupList cached = (ServiceGroupList) redis.opsForValue().get(key);
         if (cached != null) return cached.serviceGroupList();
+        return null;
+    }
 
-        List<ServiceGroupDTO> result = repository.getServicesByPrefix(prefix)
-                .stream()
-                .map(ServiceGroupDTO::from)
-                .toList();
+    public void cacheServicesByPrefix(String prefix, List<ServiceGroupDTO> result) {
+        String key = getServicesByPrefixKey(prefix);
 
         redis.opsForValue().set(
                 key,
                 new ServiceGroupList(result),
                 TTL);
-
-        return result;
     }
 
-    private String keyByPrefix(String prefix) {
+    private String getServicesByPrefixKey(String prefix) {
         return "services:prefix:" + prefix.toLowerCase();
     }
 
-    /**
-     * Get a list of services at a particular stop
-     * @param stopId the stop to query
-     * @return list of service-at-stop data objects
-     */
     public List<ServiceGroupAtStopDTO> getServicesAtStop(String stopId) {
-        String key = keyAtStop(stopId);
+        String key = getServicesAtStopKey(stopId);
 
         @SuppressWarnings("unchecked")
         ServiceGroupAtStopList cached = (ServiceGroupAtStopList) redis.opsForValue().get(key);
 
         if (cached != null) return cached.serviceGroupAtStopList();
+        return null;
+    }
 
-        List<ServiceGroupAtStopDTO> result = repository.getServicesAtStop(stopId)
-                .stream()
-                .map(ServiceGroupAtStopDTO::from)
-                .toList();
+    public void cacheServicesAtStop(String stopId, List<ServiceGroupAtStopDTO> result) {
+        String key = getServicesAtStopKey(stopId);
 
         redis.opsForValue().set(
                 key,
                 new ServiceGroupAtStopList(result),
                 TTL);
-
-        return result;
     }
 
-    private String keyAtStop(String stopId) {
+    private String getServicesAtStopKey(String stopId) {
         return "stop:" + stopId + ":services";
     }
 }

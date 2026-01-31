@@ -1,13 +1,10 @@
 package com.wychesterso.transit.brisbane_bus.api.service;
 
-import com.wychesterso.transit.brisbane_bus.api.cache.dto.CanonicalStopSequence;
-import com.wychesterso.transit.brisbane_bus.st.model.ServiceGroup;
+import com.wychesterso.transit.brisbane_bus.api.cache.StopSequenceCache;
 import com.wychesterso.transit.brisbane_bus.st.model.StopList;
-import com.wychesterso.transit.brisbane_bus.st.repository.TripRepository;
-import org.springframework.data.redis.core.RedisTemplate;
+import com.wychesterso.transit.brisbane_bus.api.repository.StopSequenceRepository;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -15,33 +12,34 @@ import java.util.stream.Collectors;
 @Service
 public class StopSequenceService {
 
-    private final TripRepository tripRepository;
-    private final RedisTemplate<String, Object> redis;
+    private final StopSequenceRepository repository;
+    private final StopSequenceCache cache;
 
     public StopSequenceService(
-            TripRepository tripRepository,
-            RedisTemplate<String, Object> redis) {
-        this.tripRepository = tripRepository;
-        this.redis = redis;
+            StopSequenceRepository repository,
+            StopSequenceCache cache) {
+        this.repository = repository;
+        this.cache = cache;
     }
 
-    // map stop_id to stop_sequence
+    /**
+     * Get the canonical (most frequently occurring) stop sequence for a service group
+     * @param routeShortName service group's route name
+     * @param tripHeadsign service group's headsign
+     * @param directionId service group's direction identifier
+     * @return map of stopId to stopSequence
+     */
     public Map<String, Integer> getCanonicalStopSequence(
             String routeShortName,
             String tripHeadsign,
-            int directionId) {
+            int directionId
+    ) {
+        Map<String, Integer> cachedResult =
+                cache.getCanonicalStopSequence(routeShortName, tripHeadsign, directionId);
+        if (cachedResult != null) return cachedResult;
 
-        String key = "service:%s:stoplist:%s:%s"
-                .formatted(routeShortName, tripHeadsign, directionId);
-
-        @SuppressWarnings("unchecked")
-        CanonicalStopSequence cached = (CanonicalStopSequence) redis.opsForValue().get(key);
-        if (cached != null) {
-            System.out.println("Using cached Redis result: " + key);
-            return cached.stopIdToSequenceMap();
-        }
-
-        List<StopList> rows = tripRepository.getStopSequences(
+        // repo query
+        List<StopList> rows = repository.getStopSequences(
                 routeShortName,
                 directionId,
                 tripHeadsign
@@ -60,8 +58,8 @@ public class StopSequenceService {
                                         .collect(Collectors.toMap(
                                                 StopList::getStopId,
                                                 StopList::getStopSequence,
-                                                (a, b) -> a,          // defensive merge
-                                                LinkedHashMap::new   // preserves traversal order
+                                                (a, b) -> a, // defensive merge
+                                                LinkedHashMap::new // preserve traversal order
                                         ))
                         )
                         .collect(Collectors.groupingBy(
@@ -75,20 +73,9 @@ public class StopSequenceService {
                 .map(Map.Entry::getKey)
                 .orElse(Map.of());
 
-        redis.opsForValue().set(
-                key,
-                new CanonicalStopSequence(result),
-                Duration.ofSeconds(86400) // TTL
-        );
+        // cache it
+        cache.cacheCanonicalStopSequence(routeShortName, tripHeadsign, directionId, result);
 
         return result;
-    }
-
-    public Map<String, Integer> getCanonicalStopSequence(ServiceGroup serviceGroup) {
-        return getCanonicalStopSequence(
-                serviceGroup.getRouteShortName(),
-                serviceGroup.getTripHeadsign(),
-                serviceGroup.getDirectionId()
-        );
     }
 }

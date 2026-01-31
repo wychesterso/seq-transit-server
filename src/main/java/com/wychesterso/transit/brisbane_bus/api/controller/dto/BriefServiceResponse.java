@@ -1,7 +1,7 @@
-package com.wychesterso.transit.brisbane_bus.api.dto;
+package com.wychesterso.transit.brisbane_bus.api.controller.dto;
 
 public record BriefServiceResponse(
-        ServiceId routeGroup,
+        ServiceGroup routeGroup,
         String routeShortName,
         String routeLongName,
         ArrivalsAtStopResponse arrivalsAtNearestStop

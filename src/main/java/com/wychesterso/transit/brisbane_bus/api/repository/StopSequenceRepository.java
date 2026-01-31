@@ -1,4 +1,4 @@
-package com.wychesterso.transit.brisbane_bus.st.repository;
+package com.wychesterso.transit.brisbane_bus.api.repository;
 
 import com.wychesterso.transit.brisbane_bus.st.model.StopList;
 import com.wychesterso.transit.brisbane_bus.st.model.StopTime;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface TripRepository extends JpaRepository<StopTime, String> {
+public interface StopSequenceRepository extends JpaRepository<StopTime, String> {
 
     @Query(
             value = """
