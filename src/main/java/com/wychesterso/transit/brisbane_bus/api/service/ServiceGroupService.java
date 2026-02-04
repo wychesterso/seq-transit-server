@@ -43,7 +43,8 @@ public class ServiceGroupService {
      * @return list of services
      */
     public List<ServiceGroupDTO> getServicesByPrefix(String prefix) {
-        if (prefix == null || prefix.isBlank()) return List.of();
+        if (prefix == null) return List.of();
+        prefix = prefix.trim();
 
         List<ServiceGroupDTO> result = cache.getServicesByPrefix(prefix);
         if (result == null) {

@@ -16,6 +16,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -90,10 +91,13 @@ public class ArrivalsService {
             LocalDate serviceDate) {
 
         Map<TripStopKey, RtStopDelay> rt = rtIndex.getIndex();
+        List<String> stopsInOrder = new ArrayList<>(canonicalStopList.keySet());
 
         return new ArrivalsAtStopResponse(
                 stopService.getStop(stopId),
                 canonicalStopList.get(stopId),
+                stopsInOrder.get(0).equals(stopId),
+                stopsInOrder.get(stopsInOrder.size() - 1).equals(stopId),
                 arrivals
                         .stream()
                         .map(r -> {

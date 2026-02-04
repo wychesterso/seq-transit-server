@@ -31,7 +31,7 @@ public class ServiceGroupWithArrivalsService {
      * @return list of services
      */
     public List<BriefServiceResponse> getServicesByPrefix(String prefix) {
-        if (prefix == null || prefix.isBlank()) return List.of();
+        if (prefix == null) return List.of();
 
         return serviceGroupService.getServicesByPrefix(prefix).stream()
                 .map(this::toBriefResponse)

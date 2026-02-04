@@ -38,12 +38,7 @@ public class ServiceGroupFullService {
 
         // iterate in stop sequence order
         for (String stopId :
-                stopSequenceService.getCanonicalStopSequence(routeShortName, tripHeadsign, directionId)
-                        .entrySet()
-                        .stream()
-                        .sorted(Map.Entry.comparingByValue())
-                        .map(Map.Entry::getKey)
-                        .toList()
+                stopSequenceService.getCanonicalStopSequence(routeShortName, tripHeadsign, directionId).keySet()
         ) {
             arrivalsAtStopSequence.add(
                     arrivalsService.getNextArrivalsForServiceAtStop(
@@ -60,6 +55,7 @@ public class ServiceGroupFullService {
             ServiceGroupDTO sg,
             List<ArrivalsAtStopResponse> arrivalsAtStopSequence
     ) {
+        if (sg == null) return null;
         return new FullServiceResponse(
                 new ServiceGroup(
                         sg.routeShortName(),

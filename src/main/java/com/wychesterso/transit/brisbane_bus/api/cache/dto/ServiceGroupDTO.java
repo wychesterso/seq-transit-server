@@ -11,6 +11,7 @@ public record ServiceGroupDTO(
         String routeTextColor
 ) {
     public static ServiceGroupDTO from(ServiceGroup sg) {
+        if (sg == null) return null;
         return new ServiceGroupDTO(
                 sg.getRouteShortName(),
                 sg.getRouteLongName(),
