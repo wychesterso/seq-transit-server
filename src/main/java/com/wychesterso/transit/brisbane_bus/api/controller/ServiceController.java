@@ -93,7 +93,9 @@ public class ServiceController {
     public FullServiceResponse getFullServiceInfo(
             @RequestParam(required = true) String route,
             @RequestParam(required = true) String headsign,
-            @RequestParam(required = true) Integer dir) {
-        return serviceGroupFullService.getFullServiceGroupInfo(route, headsign, dir);
+            @RequestParam(required = true) Integer dir,
+            @RequestParam(required = true) Double lat,
+            @RequestParam(required = true) Double lon) {
+        return serviceGroupFullService.getFullServiceGroupInfo(route, headsign, dir, lat, lon);
     }
 }

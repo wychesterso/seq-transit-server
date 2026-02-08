@@ -2,6 +2,7 @@ package com.wychesterso.transit.brisbane_bus.api.service;
 
 import com.wychesterso.transit.brisbane_bus.api.cache.dto.ServiceGroupDTO;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.ArrivalsAtStopResponse;
+import com.wychesterso.transit.brisbane_bus.api.controller.dto.BriefStopResponse;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.FullServiceResponse;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.ServiceGroup;
 import org.springframework.stereotype.Service;
@@ -16,23 +17,35 @@ public class ServiceGroupFullService {
     private final StopSequenceService stopSequenceService;
     private final ServiceGroupService serviceGroupService;
     private final ArrivalsService arrivalsService;
+    private final StopService stopService;
 
     public ServiceGroupFullService(
             StopSequenceService stopSequenceService,
             ServiceGroupService serviceGroupService,
-            ArrivalsService arrivalsService
+            ArrivalsService arrivalsService,
+            StopService stopService
     ) {
         this.stopSequenceService = stopSequenceService;
         this.serviceGroupService = serviceGroupService;
         this.arrivalsService = arrivalsService;
+        this.stopService = stopService;
     }
 
     public FullServiceResponse getFullServiceGroupInfo(
             String routeShortName,
             String tripHeadsign,
-            Integer directionId
+            Integer directionId,
+            Double lat,
+            Double lon
     ) {
-        if (routeShortName == null || tripHeadsign == null || directionId == null) return null;
+        if (lat == null || lon == null ||
+                routeShortName == null || tripHeadsign == null || directionId == null) return null;
+
+        // get nearest stop
+        BriefStopResponse adjacentStop = stopService.getAdjacentStopForServiceGroup(
+                routeShortName, tripHeadsign, directionId,
+                lat, lon
+        );
 
         List<ArrivalsAtStopResponse> arrivalsAtStopSequence = new ArrayList<>();
 
@@ -48,11 +61,13 @@ public class ServiceGroupFullService {
 
         return toResponse(
                 serviceGroupService.getServiceInfo(routeShortName, tripHeadsign, directionId),
+                adjacentStop,
                 arrivalsAtStopSequence);
     }
 
     private FullServiceResponse toResponse(
             ServiceGroupDTO sg,
+            BriefStopResponse adjacentStop,
             List<ArrivalsAtStopResponse> arrivalsAtStopSequence
     ) {
         if (sg == null) return null;
@@ -66,6 +81,7 @@ public class ServiceGroupFullService {
                 sg.routeLongName(),
                 sg.routeColor(),
                 sg.routeTextColor(),
+                adjacentStop,
                 arrivalsAtStopSequence
         );
     }

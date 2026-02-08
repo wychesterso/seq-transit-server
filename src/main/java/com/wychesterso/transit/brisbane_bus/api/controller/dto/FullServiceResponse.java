@@ -8,5 +8,6 @@ public record FullServiceResponse(
         String routeLongName,
         String routeColor,
         String routeTextColor,
+        BriefStopResponse adjacentStop,
         List<ArrivalsAtStopResponse> arrivalsAtStops
 ) {}
