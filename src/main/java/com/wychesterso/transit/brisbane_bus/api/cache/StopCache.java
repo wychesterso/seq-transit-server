@@ -1,6 +1,7 @@
 package com.wychesterso.transit.brisbane_bus.api.cache;
 
 import com.wychesterso.transit.brisbane_bus.api.cache.dto.BriefStopResponseList;
+import com.wychesterso.transit.brisbane_bus.api.controller.dto.AdjacentRadius;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.BriefStopResponse;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -42,12 +43,12 @@ public class StopCache {
 
     public List<BriefStopResponse> getAdjacentStops(
             Double quantizedLat, Double quantizedLon,
-            double latDelta
+            AdjacentRadius radius
     ) {
         String key = keyForAdjacent(
                 quantizedLat,
                 quantizedLon,
-                latDelta);
+                radius);
 
         @SuppressWarnings("unchecked")
         BriefStopResponseList cached = (BriefStopResponseList) redis.opsForValue().get(key);
@@ -56,13 +57,13 @@ public class StopCache {
     }
 
     public void cacheAdjacentStops(
-            Double quantizedLat, Double quantizedLon, double latDelta,
+            Double quantizedLat, Double quantizedLon, AdjacentRadius radius,
             List<BriefStopResponse> result
     ) {
         String key = keyForAdjacent(
                 quantizedLat,
                 quantizedLon,
-                latDelta);
+                radius);
 
         redis.opsForValue().set(
                 key,
@@ -70,8 +71,8 @@ public class StopCache {
                 TTL);
     }
 
-    private String keyForAdjacent(Double quantizedLat, Double quantizedLon, double latDelta) {
-        return "stops:adjacent:%.3f:%.3f:%.3f".formatted(quantizedLat, quantizedLon, latDelta);
+    private String keyForAdjacent(Double quantizedLat, Double quantizedLon, AdjacentRadius radius) {
+        return "stops:adjacent:%.3f:%.3f:%s".formatted(quantizedLat, quantizedLon, radius.name());
     }
 
     public BriefStopResponse getMostAdjacentStopForServiceGroup(
@@ -79,14 +80,12 @@ public class StopCache {
             String tripHeadsign,
             Integer directionId,
             Double quantizedLat,
-            Double quantizedLon,
-            double latDelta
+            Double quantizedLon
     ) {
         String key = keyForMostAdjacent(
                 routeShortName, tripHeadsign, directionId,
                 quantizedLat,
-                quantizedLon,
-                latDelta);
+                quantizedLon);
 
         @SuppressWarnings("unchecked")
         BriefStopResponse cached = (BriefStopResponse) redis.opsForValue().get(key);
@@ -99,14 +98,12 @@ public class StopCache {
             Integer directionId,
             Double quantizedLat,
             Double quantizedLon,
-            double latDelta,
             BriefStopResponse response
     ) {
         String key = keyForMostAdjacent(
                 routeShortName, tripHeadsign, directionId,
                 quantizedLat,
-                quantizedLon,
-                latDelta);
+                quantizedLon);
 
         redis.opsForValue().set(
                 key,
@@ -119,15 +116,13 @@ public class StopCache {
             String tripHeadsign,
             Integer directionId,
             Double quantizedLat,
-            Double quantizedLon,
-            double latDelta
+            Double quantizedLon
     ) {
-        return "stops:adjacent-for-service:%s:%s:%d:%.3f:%.3f:%.3f".formatted(
+        return "stops:adjacent-for-service:%s:%s:%d:%.3f:%.3f".formatted(
                 routeShortName,
                 tripHeadsign,
                 directionId,
                 quantizedLat,
-                quantizedLon,
-                latDelta);
+                quantizedLon);
     }
 }

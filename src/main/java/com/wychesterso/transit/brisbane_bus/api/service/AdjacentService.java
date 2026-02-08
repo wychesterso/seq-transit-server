@@ -1,5 +1,6 @@
 package com.wychesterso.transit.brisbane_bus.api.service;
 
+import com.wychesterso.transit.brisbane_bus.api.controller.dto.AdjacentRadius;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.ServiceResponse;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.BriefStopResponse;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.ServiceGroup;
@@ -32,11 +33,11 @@ public class AdjacentService {
         this.redis = redis;
     }
 
-    public List<ServiceResponse> getAdjacentServices(Double lat, Double lon) {
+    public List<ServiceResponse> getAdjacentServices(Double lat, Double lon, AdjacentRadius radius) {
 
         long start = System.currentTimeMillis();
         log.info("Starting getAdjacentStops...");
-        List<String> stopIds = stopService.getAdjacentStops(lat, lon)
+        List<String> stopIds = stopService.getAdjacentStops(lat, lon, radius)
                 .stream()
                 .map(BriefStopResponse::stopId)
                 .toList();

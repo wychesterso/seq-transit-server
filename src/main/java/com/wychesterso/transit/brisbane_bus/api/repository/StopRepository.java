@@ -34,22 +34,29 @@ public interface StopRepository extends JpaRepository<StopTime, String> {
     @Query(
             value = """
                     SELECT
-                        stop_id AS stopId,
-                        stop_code AS stopCode,
-                        stop_name AS stopName,
-                        stop_lat AS stopLat,
-                        stop_lon AS stopLon,
-                        zone_id as zoneId
-                    FROM stops
+                        s.stop_id AS stopId,
+                        s.stop_code AS stopCode,
+                        s.stop_name AS stopName,
+                        s.stop_lat AS stopLat,
+                        s.stop_lon AS stopLon,
+                        s.zone_id as zoneId
+                    FROM stops s
                     WHERE
-                        stop_lat BETWEEN :minLat AND :maxLat
-                        AND stop_lon BETWEEN :minLon AND :maxLon
+                        s.stop_lat BETWEEN :minLat AND :maxLat
+                        AND s.stop_lon BETWEEN :minLon AND :maxLon
+                        AND EXISTS (
+                            SELECT 1
+                            FROM stop_times st
+                            JOIN trips t ON st.trip_id = t.trip_id
+                            WHERE st.stop_id = s.stop_id
+                        )
                     ORDER BY
-                        POWER(stop_lat - :userLat, 2)
-                        + POWER(stop_lon - :userLon, 2)
+                        POWER(s.stop_lat - :userLat, 2)
+                        + POWER(s.stop_lon - :userLon, 2)
                     LIMIT 50;
                     """,
             nativeQuery = true
+
     )
     List<Stop> findAdjacentStops(
             @Param("userLat") Double userLat,
@@ -89,10 +96,6 @@ public interface StopRepository extends JpaRepository<StopTime, String> {
             @Param("tripHeadsign") String tripHeadsign,
             @Param("directionId") Integer directionId,
             @Param("userLat") Double userLat,
-            @Param("userLon") Double userLon,
-            @Param("minLat") Double minLat,
-            @Param("maxLat") Double maxLat,
-            @Param("minLon") Double minLon,
-            @Param("maxLon") Double maxLon
+            @Param("userLon") Double userLon
     );
 }

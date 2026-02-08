@@ -1,6 +1,7 @@
 package com.wychesterso.transit.brisbane_bus.api.service;
 
 import com.wychesterso.transit.brisbane_bus.api.cache.StopCache;
+import com.wychesterso.transit.brisbane_bus.api.controller.dto.AdjacentRadius;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.BriefStopResponse;
 import com.wychesterso.transit.brisbane_bus.api.repository.StopRepository;
 import org.springframework.stereotype.Service;
@@ -10,8 +11,7 @@ import java.util.List;
 @Service
 public class StopService {
 
-    private static final double LATDELTA = 0.006;
-    private static final double QUANTIZATION = 0.001;
+    private static final double QUANTIZATION = 0.0005;
 
     private final StopRepository repository;
     private final StopCache cache;
@@ -42,25 +42,28 @@ public class StopService {
      * Get the info for all stops within a certain range
      * @param lat the latitude value to start search from
      * @param lon the longitude value to start search from
+     * @param radius the search radius
      * @return a list of stop info
      */
-    public List<BriefStopResponse> getAdjacentStops(Double lat, Double lon) {
-        if (lat == null || lon == null) return null;
+    public List<BriefStopResponse> getAdjacentStops(Double lat, Double lon, AdjacentRadius radius) {
+        if (lat == null || lon == null || radius == null) return null;
+
+        double latDelta = radius.toLatDelta();
 
         double quantizedLat = quantize(lat, QUANTIZATION);
         double quantizedLon = quantize(lon, QUANTIZATION);
 
-        List<BriefStopResponse> result = cache.getAdjacentStops(quantizedLat, quantizedLon, LATDELTA);
+        List<BriefStopResponse> result = cache.getAdjacentStops(quantizedLat, quantizedLon, radius);
         if (result != null) return result;
 
-        double lonDelta = getLonDelta(LATDELTA, quantizedLat);
+        double lonDelta = getLonDelta(latDelta, quantizedLat);
         result = repository.findAdjacentStops(quantizedLat, quantizedLon,
-                        quantizedLat - LATDELTA, quantizedLat + LATDELTA,
+                        quantizedLat - latDelta, quantizedLat + latDelta,
                         quantizedLon - lonDelta, quantizedLon + lonDelta)
                 .stream()
                 .map(BriefStopResponse::from)
                 .toList();
-        cache.cacheAdjacentStops(quantizedLat, quantizedLon, LATDELTA, result);
+        cache.cacheAdjacentStops(quantizedLat, quantizedLon, radius, result);
 
         return result;
     }
@@ -89,20 +92,16 @@ public class StopService {
 
         BriefStopResponse response = cache.getMostAdjacentStopForServiceGroup(
                 routeShortName, tripHeadsign, directionId,
-                quantizedLat, quantizedLon, LATDELTA);
+                quantizedLat, quantizedLon);
         if (response != null) return response;
 
-        double lonDelta = getLonDelta(LATDELTA, quantizedLat);
         response = BriefStopResponse.from(
                 repository.findMostAdjacentStopForService(routeShortName, tripHeadsign, directionId,
-                        quantizedLat, quantizedLon,
-                        quantizedLat - LATDELTA, quantizedLat + LATDELTA,
-                        quantizedLon - lonDelta, quantizedLon + lonDelta)
+                        quantizedLat, quantizedLon)
         );
         cache.cacheMostAdjacentStopForServiceGroup(
                 routeShortName, tripHeadsign, directionId,
-                quantizedLat, quantizedLon, LATDELTA, response
-        );
+                quantizedLat, quantizedLon, response);
 
         return response;
     }

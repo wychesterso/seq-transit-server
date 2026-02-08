@@ -1,5 +1,6 @@
 package com.wychesterso.transit.brisbane_bus.api.controller;
 
+import com.wychesterso.transit.brisbane_bus.api.controller.dto.AdjacentRadius;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.BriefServiceResponse;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.ServiceResponse;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.FullServiceResponse;
@@ -72,13 +73,15 @@ public class ServiceController {
      * Each service group can only appear once in the result.
      * @param lat the query latitude
      * @param lon the query longitude
+     * @param radius the search radius
      * @return a list of service group responses
      */
     @GetMapping("/nearest")
     public List<ServiceResponse> getNearestServices(
             @RequestParam(required = true) Double lat,
-            @RequestParam(required = true) Double lon) {
-        return adjacentService.getAdjacentServices(lat, lon);
+            @RequestParam(required = true) Double lon,
+            @RequestParam(required = true) AdjacentRadius radius) {
+        return adjacentService.getAdjacentServices(lat, lon, radius);
     }
 
     /**
