@@ -5,6 +5,7 @@ public interface ServiceGroup {
     String getRouteLongName();
     String getTripHeadsign();
     Integer getDirectionId();
+    Integer getRouteType();
     String getRouteColor();
     String getRouteTextColor();
 }

@@ -7,6 +7,7 @@ public record ServiceGroupDTO(
         String routeLongName,
         String tripHeadsign,
         Integer directionId,
+        Integer routeType,
         String routeColor,
         String routeTextColor
 ) {
@@ -17,6 +18,7 @@ public record ServiceGroupDTO(
                 sg.getRouteLongName(),
                 sg.getTripHeadsign(),
                 sg.getDirectionId(),
+                sg.getRouteType(),
                 sg.getRouteColor(),
                 sg.getRouteTextColor()
         );

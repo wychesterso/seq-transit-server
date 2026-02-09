@@ -41,14 +41,8 @@ public class StopCache {
         return "stop:" + stopId + ":info";
     }
 
-    public List<BriefStopResponse> getAdjacentStops(
-            Double quantizedLat, Double quantizedLon,
-            AdjacentRadius radius
-    ) {
-        String key = keyForAdjacent(
-                quantizedLat,
-                quantizedLon,
-                radius);
+    public List<BriefStopResponse> getAdjacentStops(String cellId, AdjacentRadius radius) {
+        String key = keyForAdjacent(cellId, radius);
 
         @SuppressWarnings("unchecked")
         BriefStopResponseList cached = (BriefStopResponseList) redis.opsForValue().get(key);
@@ -57,13 +51,10 @@ public class StopCache {
     }
 
     public void cacheAdjacentStops(
-            Double quantizedLat, Double quantizedLon, AdjacentRadius radius,
+            String cellId, AdjacentRadius radius,
             List<BriefStopResponse> result
     ) {
-        String key = keyForAdjacent(
-                quantizedLat,
-                quantizedLon,
-                radius);
+        String key = keyForAdjacent(cellId, radius);
 
         redis.opsForValue().set(
                 key,
@@ -71,8 +62,8 @@ public class StopCache {
                 TTL);
     }
 
-    private String keyForAdjacent(Double quantizedLat, Double quantizedLon, AdjacentRadius radius) {
-        return "stops:adjacent:%.3f:%.3f:%s".formatted(quantizedLat, quantizedLon, radius.name());
+    private String keyForAdjacent(String cellId, AdjacentRadius radius) {
+        return "stops:adjacent:" + cellId + ":" + radius.name();
     }
 
     public BriefStopResponse getMostAdjacentStopForServiceGroup(

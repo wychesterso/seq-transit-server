@@ -4,6 +4,7 @@ import com.wychesterso.transit.brisbane_bus.api.cache.StopCache;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.AdjacentRadius;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.BriefStopResponse;
 import com.wychesterso.transit.brisbane_bus.api.repository.StopRepository;
+import com.wychesterso.transit.brisbane_bus.config.H3Utils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -52,8 +53,9 @@ public class StopService {
 
         double quantizedLat = quantize(lat, QUANTIZATION);
         double quantizedLon = quantize(lon, QUANTIZATION);
+        String cellId = H3Utils.latLonToCell(lat, lon, 8);
 
-        List<BriefStopResponse> result = cache.getAdjacentStops(quantizedLat, quantizedLon, radius);
+        List<BriefStopResponse> result = cache.getAdjacentStops(cellId, radius);
         if (result != null) return result;
 
         double lonDelta = getLonDelta(latDelta, quantizedLat);
@@ -63,7 +65,7 @@ public class StopService {
                 .stream()
                 .map(BriefStopResponse::from)
                 .toList();
-        cache.cacheAdjacentStops(quantizedLat, quantizedLon, radius, result);
+        cache.cacheAdjacentStops(cellId, radius, result);
 
         return result;
     }

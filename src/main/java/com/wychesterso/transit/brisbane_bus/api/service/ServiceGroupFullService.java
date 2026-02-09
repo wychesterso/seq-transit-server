@@ -79,6 +79,7 @@ public class ServiceGroupFullService {
                 ),
                 sg.routeShortName(),
                 sg.routeLongName(),
+                sg.routeType(),
                 sg.routeColor(),
                 sg.routeTextColor(),
                 adjacentStop,

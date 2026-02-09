@@ -3,5 +3,6 @@ package com.wychesterso.transit.brisbane_bus.api.controller.dto;
 public record BriefServiceResponse(
         ServiceGroup serviceGroup,
         String routeShortName,
-        String routeLongName
+        String routeLongName,
+        Integer routeType
 ) {}

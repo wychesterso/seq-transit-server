@@ -20,6 +20,7 @@ public interface ServiceGroupRepository extends JpaRepository<StopTime, String> 
                         r.route_long_name AS routeLongName,
                         t.trip_headsign AS tripHeadsign,
                         t.direction_id AS directionId,
+                        r.route_type AS routeType,
                         r.route_color AS routeColor,
                         r.route_text_color AS routeTextColor
                     FROM routes r
@@ -44,6 +45,7 @@ public interface ServiceGroupRepository extends JpaRepository<StopTime, String> 
                         sg.route_long_name AS routeLongName,
                         sg.trip_headsign AS tripHeadsign,
                         sg.direction_id AS directionId,
+                        sg.route_type AS routeType,
                         sg.route_color AS routeColor,
                         sg.route_text_color AS routeTextColor
                     FROM (
@@ -52,6 +54,7 @@ public interface ServiceGroupRepository extends JpaRepository<StopTime, String> 
                             r.route_long_name,
                             t.trip_headsign,
                             t.direction_id,
+                            r.route_type,
                             r.route_color,
                             r.route_text_color
                         FROM routes r
@@ -82,6 +85,7 @@ public interface ServiceGroupRepository extends JpaRepository<StopTime, String> 
                         r.route_long_name AS routeLongName,
                         t.trip_headsign AS tripHeadsign,
                         t.direction_id AS directionId,
+                        r.route_type AS routeType,
                         r.route_color AS routeColor,
                         r.route_text_color AS routeTextColor,
                         st.stop_id AS stopId,
@@ -107,6 +111,7 @@ public interface ServiceGroupRepository extends JpaRepository<StopTime, String> 
                         r.route_long_name AS routeLongName,
                         t.trip_headsign AS tripHeadsign,
                         t.direction_id AS directionId,
+                        r.route_type AS routeType,
                         r.route_color AS routeColor,
                         r.route_text_color AS routeTextColor,
                         st.stop_id AS stopId,

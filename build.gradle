@@ -28,6 +28,7 @@ dependencies {
 	implementation 'org.mobilitydata:gtfs-realtime-bindings:0.0.8'
 	implementation 'com.google.protobuf:protobuf-java:3.25.3'
 	implementation 'commons-codec:commons-codec:1.16.0'
+	implementation 'com.uber:h3:3.7.2'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

@@ -123,7 +123,8 @@ public class ServiceGroupWithArrivalsService {
                         dto.directionId()
                 ),
                 dto.routeShortName(),
-                dto.routeLongName()
+                dto.routeLongName(),
+                dto.routeType()
         );
     }
 
@@ -152,6 +153,7 @@ public class ServiceGroupWithArrivalsService {
                 ),
                 dto.routeShortName(),
                 dto.routeLongName(),
+                dto.routeType(),
                 arrivalsAtStopResponse
         );
     }
@@ -190,6 +192,7 @@ public class ServiceGroupWithArrivalsService {
                 ),
                 dto.routeShortName(),
                 dto.routeLongName(),
+                dto.routeType(),
                 arrivalsAtStopResponse
         );
     }
