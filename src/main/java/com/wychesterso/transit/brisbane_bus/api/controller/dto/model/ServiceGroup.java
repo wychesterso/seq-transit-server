@@ -1,4 +1,4 @@
-package com.wychesterso.transit.brisbane_bus.api.controller.dto;
+package com.wychesterso.transit.brisbane_bus.api.controller.dto.model;
 
 public record ServiceGroup(
         String routeShortName,

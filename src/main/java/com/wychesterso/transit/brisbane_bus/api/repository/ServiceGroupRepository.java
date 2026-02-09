@@ -1,8 +1,8 @@
 package com.wychesterso.transit.brisbane_bus.api.repository;
 
-import com.wychesterso.transit.brisbane_bus.st.model.ServiceGroup;
-import com.wychesterso.transit.brisbane_bus.st.model.ServiceGroupAtStop;
-import com.wychesterso.transit.brisbane_bus.st.model.StopTime;
+import com.wychesterso.transit.brisbane_bus.api.repository.dto.ServiceGroup;
+import com.wychesterso.transit.brisbane_bus.api.repository.dto.ServiceGroupAtStop;
+import com.wychesterso.transit.brisbane_bus.api.repository.dto.StopTime;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,7 +22,8 @@ public interface ServiceGroupRepository extends JpaRepository<StopTime, String> 
                         t.direction_id AS directionId,
                         r.route_type AS routeType,
                         r.route_color AS routeColor,
-                        r.route_text_color AS routeTextColor
+                        r.route_text_color AS routeTextColor,
+                        t.shape_id AS shapeId
                     FROM routes r
                     JOIN trips t ON r.route_id = t.route_id
                     WHERE r.route_short_name = :routeShortName
@@ -47,7 +48,8 @@ public interface ServiceGroupRepository extends JpaRepository<StopTime, String> 
                         sg.direction_id AS directionId,
                         sg.route_type AS routeType,
                         sg.route_color AS routeColor,
-                        sg.route_text_color AS routeTextColor
+                        sg.route_text_color AS routeTextColor,
+                        sg.shape_id AS shapeId,
                     FROM (
                         SELECT DISTINCT
                             r.route_short_name,
@@ -56,7 +58,8 @@ public interface ServiceGroupRepository extends JpaRepository<StopTime, String> 
                             t.direction_id,
                             r.route_type,
                             r.route_color,
-                            r.route_text_color
+                            r.route_text_color,
+                            t.shape_id
                         FROM routes r
                         JOIN trips t ON r.route_id = t.route_id
                         WHERE r.route_short_name ILIKE CONCAT(:prefix, '%')

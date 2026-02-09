@@ -1,4 +1,4 @@
-package com.wychesterso.transit.brisbane_bus.st.model;
+package com.wychesterso.transit.brisbane_bus.api.repository.dto;
 
 import java.io.Serializable;
 import java.util.Objects;

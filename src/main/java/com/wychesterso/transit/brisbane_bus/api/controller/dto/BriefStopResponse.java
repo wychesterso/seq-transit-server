@@ -1,6 +1,6 @@
 package com.wychesterso.transit.brisbane_bus.api.controller.dto;
 
-import com.wychesterso.transit.brisbane_bus.st.model.Stop;
+import com.wychesterso.transit.brisbane_bus.api.repository.dto.Stop;
 
 public record BriefStopResponse(
         String stopId,

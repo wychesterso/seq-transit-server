@@ -1,7 +1,7 @@
 package com.wychesterso.transit.brisbane_bus.api.cache;
 
 import com.wychesterso.transit.brisbane_bus.api.cache.dto.BriefStopResponseList;
-import com.wychesterso.transit.brisbane_bus.api.controller.dto.AdjacentRadius;
+import com.wychesterso.transit.brisbane_bus.api.controller.dto.model.AdjacentRadius;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.BriefStopResponse;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;

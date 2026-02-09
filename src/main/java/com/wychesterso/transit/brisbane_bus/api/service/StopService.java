@@ -1,7 +1,7 @@
 package com.wychesterso.transit.brisbane_bus.api.service;
 
 import com.wychesterso.transit.brisbane_bus.api.cache.StopCache;
-import com.wychesterso.transit.brisbane_bus.api.controller.dto.AdjacentRadius;
+import com.wychesterso.transit.brisbane_bus.api.controller.dto.model.AdjacentRadius;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.BriefStopResponse;
 import com.wychesterso.transit.brisbane_bus.api.repository.StopRepository;
 import com.wychesterso.transit.brisbane_bus.config.H3Utils;

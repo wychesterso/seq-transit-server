@@ -1,6 +1,6 @@
 package com.wychesterso.transit.brisbane_bus.api.controller;
 
-import com.wychesterso.transit.brisbane_bus.api.controller.dto.AdjacentRadius;
+import com.wychesterso.transit.brisbane_bus.api.controller.dto.model.AdjacentRadius;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.BriefStopResponse;
 import com.wychesterso.transit.brisbane_bus.api.service.AdjacentService;
 import com.wychesterso.transit.brisbane_bus.api.service.StopService;

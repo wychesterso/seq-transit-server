@@ -1,6 +1,6 @@
 package com.wychesterso.transit.brisbane_bus.api.cache.dto;
 
-import com.wychesterso.transit.brisbane_bus.st.model.ServiceGroup;
+import com.wychesterso.transit.brisbane_bus.api.repository.dto.ServiceGroup;
 
 public record ServiceGroupDTO(
         String routeShortName,
@@ -9,7 +9,8 @@ public record ServiceGroupDTO(
         Integer directionId,
         Integer routeType,
         String routeColor,
-        String routeTextColor
+        String routeTextColor,
+        String shapeId
 ) {
     public static ServiceGroupDTO from(ServiceGroup sg) {
         if (sg == null) return null;
@@ -20,7 +21,8 @@ public record ServiceGroupDTO(
                 sg.getDirectionId(),
                 sg.getRouteType(),
                 sg.getRouteColor(),
-                sg.getRouteTextColor()
+                sg.getRouteTextColor(),
+                sg.getShapeId()
         );
     }
 }

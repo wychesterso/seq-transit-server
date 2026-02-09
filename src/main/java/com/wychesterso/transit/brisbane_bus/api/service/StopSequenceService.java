@@ -1,12 +1,15 @@
 package com.wychesterso.transit.brisbane_bus.api.service;
 
 import com.wychesterso.transit.brisbane_bus.api.cache.StopSequenceCache;
-import com.wychesterso.transit.brisbane_bus.st.model.StopList;
+import com.wychesterso.transit.brisbane_bus.api.cache.dto.CanonicalStopSequence;
+import com.wychesterso.transit.brisbane_bus.api.cache.dto.CanonicalStopSequenceAndShape;
+import com.wychesterso.transit.brisbane_bus.api.repository.dto.ShapePoint;
+import com.wychesterso.transit.brisbane_bus.api.repository.dto.StopList;
 import com.wychesterso.transit.brisbane_bus.api.repository.StopSequenceRepository;
+import com.wychesterso.transit.brisbane_bus.api.service.dto.StopSequence;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,7 +37,62 @@ public class StopSequenceService {
             String tripHeadsign,
             int directionId
     ) {
-        Map<String, Integer> cachedResult =
+        return getCanonicalStopSequenceWithTrips(routeShortName, tripHeadsign, directionId)
+                .stopIdToSequenceMap();
+    }
+
+    /**
+     * Get the canonical (most frequently occurring) stop sequence and shape for a service group
+     * @param routeShortName service group's route name
+     * @param tripHeadsign service group's headsign
+     * @param directionId service group's direction identifier
+     * @return the canonical stop sequence and shape
+     */
+    public CanonicalStopSequenceAndShape getCanonicalStopSequenceAndShape(
+            String routeShortName,
+            String tripHeadsign,
+            int directionId
+    ) {
+        CanonicalStopSequenceAndShape cachedResult =
+                cache.getCanonicalStopSequenceAndShape(routeShortName, tripHeadsign, directionId);
+        if (cachedResult != null) return cachedResult;
+
+        CanonicalStopSequence canonicalStopSequence = getCanonicalStopSequenceWithTrips(
+                routeShortName, tripHeadsign, directionId);
+        List<String> tripIds = canonicalStopSequence.tripIds();
+
+        // build shape_signature -> shapes map
+        Map<String, List<List<ShapePoint>>> groupedShapes =
+                tripIds.stream()
+                        .map(repository::getShape)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.groupingBy(
+                                StopSequenceService::shapeSignature
+                        ));
+
+        // find most frequent shape
+        List<ShapePoint> canonicalShape =
+                groupedShapes.entrySet().stream()
+                        .max(Comparator.comparingInt(e -> e.getValue().size()))
+                        .orElseThrow()
+                        .getValue().get(0);
+
+        // result
+        CanonicalStopSequenceAndShape result = new CanonicalStopSequenceAndShape(
+                canonicalStopSequence.stopIdToSequenceMap(), canonicalShape);
+
+        // cache it
+        cache.cacheCanonicalStopSequenceAndShape(routeShortName, tripHeadsign, directionId, result);
+
+        return result;
+    }
+
+    private CanonicalStopSequence getCanonicalStopSequenceWithTrips(
+            String routeShortName,
+            String tripHeadsign,
+            int directionId
+    ) {
+        CanonicalStopSequence cachedResult =
                 cache.getCanonicalStopSequence(routeShortName, tripHeadsign, directionId);
         if (cachedResult != null) return cachedResult;
 
@@ -49,11 +107,12 @@ public class StopSequenceService {
         Map<String, List<StopList>> byTrip =
                 rows.stream().collect(Collectors.groupingBy(StopList::getTripId));
 
-        // build stop_id -> stop_sequence maps and count frequency
-        Map<Map<String, Integer>, Long> frequency =
-                byTrip.values().stream()
-                        .map(stops ->
-                                stops.stream()
+        // build stop sequences
+        List<StopSequence> patterns =
+                byTrip.entrySet().stream()
+                        .map(entry -> new StopSequence(
+                                entry.getKey(),
+                                entry.getValue().stream()
                                         .sorted(Comparator.comparingInt(StopList::getStopSequence))
                                         .collect(Collectors.toMap(
                                                 StopList::getStopId,
@@ -61,21 +120,38 @@ public class StopSequenceService {
                                                 (a, b) -> a, // defensive merge
                                                 LinkedHashMap::new // preserve traversal order
                                         ))
-                        )
+                        ))
+                        .toList();
+
+        // group by sequence map, and collect tripIds
+        Map<Map<String, Integer>, List<String>> grouped =
+                patterns.stream()
                         .collect(Collectors.groupingBy(
-                                Function.identity(),
-                                Collectors.counting()
+                                StopSequence::stopIdToSequence,
+                                Collectors.mapping(StopSequence::tripId, Collectors.toList())
                         ));
 
-        // return most frequently occurring map
-        Map<String, Integer> result = frequency.entrySet().stream()
-                .max(Map.Entry.comparingByValue())
-                .map(Map.Entry::getKey)
-                .orElse(Map.of());
+        // find most frequent pattern
+        Map.Entry<Map<String, Integer>, List<String>> mostFrequent =
+                grouped.entrySet().stream()
+                        .max(Comparator.comparingInt(e -> e.getValue().size()))
+                        .orElseThrow();
+
+        // result
+        CanonicalStopSequence result = new CanonicalStopSequence(
+                mostFrequent.getKey(),
+                mostFrequent.getValue());
 
         // cache it
         cache.cacheCanonicalStopSequence(routeShortName, tripHeadsign, directionId, result);
 
         return result;
+    }
+
+    private static String shapeSignature(List<ShapePoint> shape) {
+        return shape.stream()
+                .sorted(Comparator.comparingInt(ShapePoint::getShapePtSequence))
+                .map(p -> p.getShapePtLat() + "," + p.getShapePtLon())
+                .collect(Collectors.joining("|"));
     }
 }

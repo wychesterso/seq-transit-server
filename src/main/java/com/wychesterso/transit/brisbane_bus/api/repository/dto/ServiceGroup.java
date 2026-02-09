@@ -1,6 +1,6 @@
-package com.wychesterso.transit.brisbane_bus.st.model;
+package com.wychesterso.transit.brisbane_bus.api.repository.dto;
 
-public interface ServiceGroupAtStop {
+public interface ServiceGroup {
     String getRouteShortName();
     String getRouteLongName();
     String getTripHeadsign();
@@ -8,7 +8,5 @@ public interface ServiceGroupAtStop {
     Integer getRouteType();
     String getRouteColor();
     String getRouteTextColor();
-    String getStopId();
-    Double getStopLat();
-    Double getStopLon();
+    String getShapeId();
 }

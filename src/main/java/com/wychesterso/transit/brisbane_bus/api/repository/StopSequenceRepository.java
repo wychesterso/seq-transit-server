@@ -1,7 +1,8 @@
 package com.wychesterso.transit.brisbane_bus.api.repository;
 
-import com.wychesterso.transit.brisbane_bus.st.model.StopList;
-import com.wychesterso.transit.brisbane_bus.st.model.StopTime;
+import com.wychesterso.transit.brisbane_bus.api.repository.dto.ShapePoint;
+import com.wychesterso.transit.brisbane_bus.api.repository.dto.StopList;
+import com.wychesterso.transit.brisbane_bus.api.repository.dto.StopTime;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -32,5 +33,21 @@ public interface StopSequenceRepository extends JpaRepository<StopTime, String> 
             @Param("routeShortName") String routeShortName,
             @Param("directionId") int directionId,
             @Param("tripHeadsign") String tripHeadsign
+    );
+
+    @Query(
+            value = """
+                    SELECT
+                        sh.shape_pt_lat AS shapePtLat,
+                        sh.shape_pt_lon,
+                        sh.shape_pt_sequence
+                    FROM shapes sh
+                    JOIN trips t ON sh.shape_id = t.shape_id
+                    WHERE t.trip_id = :tripId
+                    """,
+            nativeQuery = true
+    )
+    List<ShapePoint> getShape(
+            @Param("tripId") String tripId
     );
 }

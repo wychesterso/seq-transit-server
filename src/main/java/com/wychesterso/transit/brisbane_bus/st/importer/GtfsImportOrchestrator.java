@@ -14,6 +14,7 @@ public class GtfsImportOrchestrator {
     private final CalendarLoader calendarLoader;
     private final CalendarDateLoader calendarDateLoader;
     private final TripLoader tripLoader;
+    private final ShapeLoader shapeLoader;
     private final StopTimeLoader stopTimeLoader;
 
     public GtfsImportOrchestrator(
@@ -22,12 +23,14 @@ public class GtfsImportOrchestrator {
             CalendarLoader calendarLoader,
             CalendarDateLoader calendarDateLoader,
             TripLoader tripLoader,
+            ShapeLoader shapeLoader,
             StopTimeLoader stopTimeLoader) {
         this.routeLoader = routeLoader;
         this.stopLoader = stopLoader;
         this.calendarLoader = calendarLoader;
         this.calendarDateLoader = calendarDateLoader;
         this.tripLoader = tripLoader;
+        this.shapeLoader = shapeLoader;
         this.stopTimeLoader = stopTimeLoader;
     }
 
@@ -38,6 +41,7 @@ public class GtfsImportOrchestrator {
         calendarLoader.loadCalendar(gtfsDir);
         calendarDateLoader.loadCalendarDates(gtfsDir);
         tripLoader.loadTrips(gtfsDir);
+        shapeLoader.loadShapes(gtfsDir);
         stopTimeLoader.loadStopTimes(gtfsDir);
     }
 }

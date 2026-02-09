@@ -3,7 +3,8 @@ package com.wychesterso.transit.brisbane_bus.api.service;
 import com.wychesterso.transit.brisbane_bus.api.cache.dto.ServiceGroupAtStopDTO;
 import com.wychesterso.transit.brisbane_bus.api.cache.dto.ServiceGroupDTO;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.*;
-import com.wychesterso.transit.brisbane_bus.st.model.ServiceGroupKey;
+import com.wychesterso.transit.brisbane_bus.api.controller.dto.model.ServiceGroup;
+import com.wychesterso.transit.brisbane_bus.api.repository.dto.ServiceGroupKey;
 import org.springframework.stereotype.Service;
 
 import java.util.*;

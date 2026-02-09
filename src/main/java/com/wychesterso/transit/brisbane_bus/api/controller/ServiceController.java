@@ -1,6 +1,6 @@
 package com.wychesterso.transit.brisbane_bus.api.controller;
 
-import com.wychesterso.transit.brisbane_bus.api.controller.dto.AdjacentRadius;
+import com.wychesterso.transit.brisbane_bus.api.controller.dto.model.AdjacentRadius;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.BriefServiceResponse;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.ServiceResponse;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.FullServiceResponse;
@@ -90,6 +90,8 @@ public class ServiceController {
      * @param route the route number or short name
      * @param headsign the service's headsign
      * @param dir the service's direction id
+     * @param lat the query latitude (for determining the nearest stop)
+     * @param lon the query longitude (for determining the nearest stop)
      * @return a full service response containing service info, stop sequence and arrivals
      */
     @GetMapping("/info")

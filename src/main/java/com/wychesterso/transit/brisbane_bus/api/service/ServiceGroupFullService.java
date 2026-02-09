@@ -1,15 +1,18 @@
 package com.wychesterso.transit.brisbane_bus.api.service;
 
+import com.wychesterso.transit.brisbane_bus.api.cache.dto.CanonicalStopSequenceAndShape;
 import com.wychesterso.transit.brisbane_bus.api.cache.dto.ServiceGroupDTO;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.ArrivalsAtStopResponse;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.BriefStopResponse;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.FullServiceResponse;
-import com.wychesterso.transit.brisbane_bus.api.controller.dto.ServiceGroup;
+import com.wychesterso.transit.brisbane_bus.api.controller.dto.model.CoordinatePoint;
+import com.wychesterso.transit.brisbane_bus.api.controller.dto.model.ServiceGroup;
+import com.wychesterso.transit.brisbane_bus.api.repository.dto.ShapePoint;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class ServiceGroupFullService {
@@ -49,10 +52,11 @@ public class ServiceGroupFullService {
 
         List<ArrivalsAtStopResponse> arrivalsAtStopSequence = new ArrayList<>();
 
+        CanonicalStopSequenceAndShape sequenceAndShape =
+                stopSequenceService.getCanonicalStopSequenceAndShape(routeShortName, tripHeadsign, directionId);
+
         // iterate in stop sequence order
-        for (String stopId :
-                stopSequenceService.getCanonicalStopSequence(routeShortName, tripHeadsign, directionId).keySet()
-        ) {
+        for (String stopId : sequenceAndShape.stopIdToSequenceMap().keySet()) {
             arrivalsAtStopSequence.add(
                     arrivalsService.getNextArrivalsForServiceAtStop(
                             stopId,
@@ -61,12 +65,14 @@ public class ServiceGroupFullService {
 
         return toResponse(
                 serviceGroupService.getServiceInfo(routeShortName, tripHeadsign, directionId),
+                sequenceAndShape.shape(),
                 adjacentStop,
                 arrivalsAtStopSequence);
     }
 
     private FullServiceResponse toResponse(
             ServiceGroupDTO sg,
+            List<ShapePoint> shapePoints,
             BriefStopResponse adjacentStop,
             List<ArrivalsAtStopResponse> arrivalsAtStopSequence
     ) {
@@ -82,8 +88,15 @@ public class ServiceGroupFullService {
                 sg.routeType(),
                 sg.routeColor(),
                 sg.routeTextColor(),
+                shapePointsToShape(shapePoints),
                 adjacentStop,
                 arrivalsAtStopSequence
         );
+    }
+
+    private List<CoordinatePoint> shapePointsToShape(List<ShapePoint> shapePoints) {
+        return shapePoints.stream()
+                .sorted(Comparator.comparingInt(ShapePoint::getShapePtSequence))
+                .map(s -> new CoordinatePoint(s.getShapePtLat(), s.getShapePtLon())).toList();
     }
 }

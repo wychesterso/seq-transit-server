@@ -2,7 +2,7 @@ package com.wychesterso.transit.brisbane_bus.api.service;
 
 import com.wychesterso.transit.brisbane_bus.api.cache.ArrivalsCache;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.ArrivalsAtStopResponse;
-import com.wychesterso.transit.brisbane_bus.st.model.StopArrival;
+import com.wychesterso.transit.brisbane_bus.api.repository.dto.StopArrival;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.ArrivalResponse;
 import com.wychesterso.transit.brisbane_bus.rt.model.RtStopDelay;
 import com.wychesterso.transit.brisbane_bus.rt.model.TripStopKey;

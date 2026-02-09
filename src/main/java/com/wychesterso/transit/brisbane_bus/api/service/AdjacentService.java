@@ -1,9 +1,9 @@
 package com.wychesterso.transit.brisbane_bus.api.service;
 
-import com.wychesterso.transit.brisbane_bus.api.controller.dto.AdjacentRadius;
+import com.wychesterso.transit.brisbane_bus.api.controller.dto.model.AdjacentRadius;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.ServiceResponse;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.BriefStopResponse;
-import com.wychesterso.transit.brisbane_bus.api.controller.dto.ServiceGroup;
+import com.wychesterso.transit.brisbane_bus.api.controller.dto.model.ServiceGroup;
 import com.wychesterso.transit.brisbane_bus.st.loader.RouteLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

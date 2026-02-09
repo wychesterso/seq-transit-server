@@ -1,6 +1,6 @@
 package com.wychesterso.transit.brisbane_bus.api.cache.dto;
 
-import com.wychesterso.transit.brisbane_bus.st.model.ServiceGroupAtStop;
+import com.wychesterso.transit.brisbane_bus.api.repository.dto.ServiceGroupAtStop;
 
 public record ServiceGroupAtStopDTO(
         String routeShortName,

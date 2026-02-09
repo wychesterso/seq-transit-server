@@ -15,25 +15,25 @@ import java.sql.Connection;
 import java.sql.Statement;
 
 @Component
-public class StopLoader {
+public class ShapeLoader {
 
     private final DataSource dataSource;
-    private static final Logger log = LoggerFactory.getLogger(StopLoader.class);
+    private static final Logger log = LoggerFactory.getLogger(ShapeLoader.class);
 
-    public StopLoader(DataSource dataSource) {
+    public ShapeLoader(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
     @Transactional
-    public void loadStops(Path gtfsDir) throws Exception {
+    public void loadShapes(Path gtfsDir) throws Exception {
 
-        Path stopsFile = gtfsDir.resolve("stops.txt");
-        if (!Files.exists(stopsFile)) {
-            throw new IllegalStateException("stops.txt not found in " + gtfsDir);
+        Path shapesFile = gtfsDir.resolve("shapes.txt");
+        if (!Files.exists(shapesFile)) {
+            throw new IllegalStateException("shapes.txt not found in " + gtfsDir);
         }
 
         long start = System.currentTimeMillis();
-        log.info("Starting StopLoader...");
+        log.info("Starting ShapeLoader...");
 
         try (Connection conn = dataSource.getConnection()) {
 
@@ -47,39 +47,32 @@ public class StopLoader {
             // drop indexes to speed up bulk insert
             try (Statement st = conn.createStatement()) {
                 log.info("Dropping indexes...");
-                st.execute("DROP INDEX IF EXISTS idx_stops_lat_lon");
+                st.execute("DROP INDEX IF EXISTS idx_shapes_shape_id");
             }
 
             // clear table
-            log.info("Truncating stops...");
+            log.info("Truncating shapes...");
             try (Statement st = conn.createStatement()) {
-                st.execute("TRUNCATE stops");
+                st.execute("TRUNCATE shapes");
             }
 
             // copy raw csv to staging
-            log.info("Starting COPY stops...");
+            log.info("Starting COPY shapes...");
             long copyStart = System.currentTimeMillis();
 
-            try (Reader reader = Files.newBufferedReader(stopsFile)) {
+            try (Reader reader = Files.newBufferedReader(shapesFile)) {
 
                 long rows = copy.copyIn("""
-                            COPY stops (
-                                stop_id,
-                                stop_code,
-                                stop_name,
-                                stop_desc,
-                                stop_lat,
-                                stop_lon,
-                                zone_id,
-                                stop_url,
-                                location_type,
-                                parent_station,
-                                platform_code
+                            COPY shapes (
+                                shape_id,
+                                shape_pt_lat,
+                                shape_pt_lon,
+                                shape_pt_sequence
                             )
                             FROM STDIN WITH (FORMAT csv, HEADER true)
                         """, reader);
 
-                log.info("COPY stops finished: {} rows in {} ms",
+                log.info("COPY shapes finished: {} rows in {} ms",
                         rows, System.currentTimeMillis() - copyStart);
             }
 
@@ -87,13 +80,13 @@ public class StopLoader {
             try (Statement st = conn.createStatement()) {
                 log.info("Recreating indexes...");
                 st.execute("""
-                    CREATE INDEX IF NOT EXISTS idx_stops_lat_lon
-                    ON stops (stop_lat, stop_lon);
+                    CREATE INDEX IF NOT EXISTS idx_shapes_shape_id
+                    ON shapes(shape_id);
                 """);
                 log.info("Indexes recreated");
             }
 
-            log.info("StopLoader finished in {} ms",
+            log.info("ShapeLoader finished in {} ms",
                     System.currentTimeMillis() - start);
         }
     }
