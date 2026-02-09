@@ -49,9 +49,9 @@ public interface ServiceGroupRepository extends JpaRepository<StopTime, String> 
                         sg.route_type AS routeType,
                         sg.route_color AS routeColor,
                         sg.route_text_color AS routeTextColor,
-                        sg.shape_id AS shapeId,
+                        sg.shape_id AS shapeId
                     FROM (
-                        SELECT DISTINCT
+                        SELECT
                             r.route_short_name,
                             r.route_long_name,
                             t.trip_headsign,
@@ -59,10 +59,18 @@ public interface ServiceGroupRepository extends JpaRepository<StopTime, String> 
                             r.route_type,
                             r.route_color,
                             r.route_text_color,
-                            t.shape_id
+                            MIN(t.shape_id) AS shape_id
                         FROM routes r
                         JOIN trips t ON r.route_id = t.route_id
                         WHERE r.route_short_name ILIKE CONCAT(:prefix, '%')
+                        GROUP BY
+                            r.route_short_name,
+                            r.route_long_name,
+                            t.trip_headsign,
+                            t.direction_id,
+                            r.route_type,
+                            r.route_color,
+                            r.route_text_color
                     ) sg
                     ORDER BY
                         CASE

@@ -2,12 +2,12 @@ package com.wychesterso.transit.brisbane_bus.api.service;
 
 import com.wychesterso.transit.brisbane_bus.api.cache.dto.CanonicalStopSequenceAndShape;
 import com.wychesterso.transit.brisbane_bus.api.cache.dto.ServiceGroupDTO;
+import com.wychesterso.transit.brisbane_bus.api.cache.dto.ShapePoint;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.ArrivalsAtStopResponse;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.BriefStopResponse;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.FullServiceResponse;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.model.CoordinatePoint;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.model.ServiceGroup;
-import com.wychesterso.transit.brisbane_bus.api.repository.dto.ShapePoint;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -72,7 +72,7 @@ public class ServiceGroupFullService {
 
     private FullServiceResponse toResponse(
             ServiceGroupDTO sg,
-            List<ShapePoint> shapePoints,
+            List<ShapePoint> shapes,
             BriefStopResponse adjacentStop,
             List<ArrivalsAtStopResponse> arrivalsAtStopSequence
     ) {
@@ -88,7 +88,7 @@ public class ServiceGroupFullService {
                 sg.routeType(),
                 sg.routeColor(),
                 sg.routeTextColor(),
-                shapePointsToShape(shapePoints),
+                shapePointsToShape(shapes),
                 adjacentStop,
                 arrivalsAtStopSequence
         );
@@ -96,7 +96,7 @@ public class ServiceGroupFullService {
 
     private List<CoordinatePoint> shapePointsToShape(List<ShapePoint> shapePoints) {
         return shapePoints.stream()
-                .sorted(Comparator.comparingInt(ShapePoint::getShapePtSequence))
-                .map(s -> new CoordinatePoint(s.getShapePtLat(), s.getShapePtLon())).toList();
+                .sorted(Comparator.comparingInt(ShapePoint::shapePtSequence))
+                .map(s -> new CoordinatePoint(s.shapePtLat(), s.shapePtLon())).toList();
     }
 }

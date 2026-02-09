@@ -1,6 +1,6 @@
 package com.wychesterso.transit.brisbane_bus.api.repository;
 
-import com.wychesterso.transit.brisbane_bus.api.repository.dto.ShapePoint;
+import com.wychesterso.transit.brisbane_bus.api.repository.dto.Shape;
 import com.wychesterso.transit.brisbane_bus.api.repository.dto.StopList;
 import com.wychesterso.transit.brisbane_bus.api.repository.dto.StopTime;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -47,7 +47,7 @@ public interface StopSequenceRepository extends JpaRepository<StopTime, String> 
                     """,
             nativeQuery = true
     )
-    List<ShapePoint> getShape(
+    List<Shape> getShape(
             @Param("tripId") String tripId
     );
 }

@@ -3,7 +3,8 @@ package com.wychesterso.transit.brisbane_bus.api.service;
 import com.wychesterso.transit.brisbane_bus.api.cache.StopSequenceCache;
 import com.wychesterso.transit.brisbane_bus.api.cache.dto.CanonicalStopSequence;
 import com.wychesterso.transit.brisbane_bus.api.cache.dto.CanonicalStopSequenceAndShape;
-import com.wychesterso.transit.brisbane_bus.api.repository.dto.ShapePoint;
+import com.wychesterso.transit.brisbane_bus.api.cache.dto.ShapePoint;
+import com.wychesterso.transit.brisbane_bus.api.repository.dto.Shape;
 import com.wychesterso.transit.brisbane_bus.api.repository.dto.StopList;
 import com.wychesterso.transit.brisbane_bus.api.repository.StopSequenceRepository;
 import com.wychesterso.transit.brisbane_bus.api.service.dto.StopSequence;
@@ -62,7 +63,7 @@ public class StopSequenceService {
         List<String> tripIds = canonicalStopSequence.tripIds();
 
         // build shape_signature -> shapes map
-        Map<String, List<List<ShapePoint>>> groupedShapes =
+        Map<String, List<List<Shape>>> groupedShapes =
                 tripIds.stream()
                         .map(repository::getShape)
                         .filter(Objects::nonNull)
@@ -71,7 +72,7 @@ public class StopSequenceService {
                         ));
 
         // find most frequent shape
-        List<ShapePoint> canonicalShape =
+        List<Shape> canonicalShape =
                 groupedShapes.entrySet().stream()
                         .max(Comparator.comparingInt(e -> e.getValue().size()))
                         .orElseThrow()
@@ -79,7 +80,7 @@ public class StopSequenceService {
 
         // result
         CanonicalStopSequenceAndShape result = new CanonicalStopSequenceAndShape(
-                canonicalStopSequence.stopIdToSequenceMap(), canonicalShape);
+                canonicalStopSequence.stopIdToSequenceMap(), canonicalShape.stream().map(ShapePoint::from).toList());
 
         // cache it
         cache.cacheCanonicalStopSequenceAndShape(routeShortName, tripHeadsign, directionId, result);
@@ -148,9 +149,9 @@ public class StopSequenceService {
         return result;
     }
 
-    private static String shapeSignature(List<ShapePoint> shape) {
+    private static String shapeSignature(List<Shape> shape) {
         return shape.stream()
-                .sorted(Comparator.comparingInt(ShapePoint::getShapePtSequence))
+                .sorted(Comparator.comparingInt(Shape::getShapePtSequence))
                 .map(p -> p.getShapePtLat() + "," + p.getShapePtLon())
                 .collect(Collectors.joining("|"));
     }
