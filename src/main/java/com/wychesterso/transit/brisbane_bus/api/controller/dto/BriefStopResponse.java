@@ -11,6 +11,7 @@ public record BriefStopResponse(
         String zoneId
 ) {
     public static BriefStopResponse from(Stop stop) {
+        if (stop == null) return null;
         return new BriefStopResponse(
                 stop.getStopId(),
                 stop.getStopCode(),

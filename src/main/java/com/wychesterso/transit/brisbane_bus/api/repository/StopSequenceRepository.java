@@ -38,7 +38,7 @@ public interface StopSequenceRepository extends JpaRepository<StopTime, String> 
 
     @Query(
             value = """
-                    SELECT
+                    SELECT DISTINCT
                         sh.shape_id AS shapeId,
                         sh.shape_pt_lat AS shapePtLat,
                         sh.shape_pt_lon AS shapePtLon,
