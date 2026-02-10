@@ -21,16 +21,13 @@ public class AdjacentService {
     private final StopService stopService;
     private final ServiceGroupWithArrivalsService serviceGroupWithArrivalsService;
 
-    private final RedisTemplate<String, Object> redis;
-    private static final Logger log = LoggerFactory.getLogger(RouteLoader.class);
+    private static final Logger log = LoggerFactory.getLogger(AdjacentService.class);
 
     public AdjacentService(
             StopService stopService,
-            ServiceGroupWithArrivalsService serviceGroupWithArrivalsService,
-            RedisTemplate<String, Object> redis) {
+            ServiceGroupWithArrivalsService serviceGroupWithArrivalsService) {
         this.stopService = stopService;
         this.serviceGroupWithArrivalsService = serviceGroupWithArrivalsService;
-        this.redis = redis;
     }
 
     public List<ServiceResponse> getAdjacentServices(Double lat, Double lon, AdjacentRadius radius) {

@@ -47,6 +47,7 @@ public class TripLoader {
                 log.info("Dropping indexes...");
                 st.execute("DROP INDEX IF EXISTS idx_trips_trip_id");
                 st.execute("DROP INDEX IF EXISTS idx_trips_route_id");
+                st.execute("DROP INDEX IF EXISTS idx_trips_shape_id");
                 st.execute("DROP INDEX IF EXISTS idx_trips_trip_route");
             }
 
@@ -87,6 +88,8 @@ public class TripLoader {
                     ON trips (trip_id);
                     CREATE INDEX IF NOT EXISTS idx_trips_route_id
                     ON trips (route_id);
+                    CREATE INDEX IF NOT EXISTS idx_trips_route_id
+                    ON trips (shape_id);
                     CREATE INDEX IF NOT EXISTS idx_trips_trip_route
                     ON trips (trip_id, route_id);
                 """);

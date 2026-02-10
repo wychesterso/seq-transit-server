@@ -7,7 +7,10 @@ import com.wychesterso.transit.brisbane_bus.api.cache.dto.ShapePoint;
 import com.wychesterso.transit.brisbane_bus.api.repository.dto.Shape;
 import com.wychesterso.transit.brisbane_bus.api.repository.dto.StopList;
 import com.wychesterso.transit.brisbane_bus.api.repository.StopSequenceRepository;
+import com.wychesterso.transit.brisbane_bus.api.repository.dto.TripAndShape;
 import com.wychesterso.transit.brisbane_bus.api.service.dto.StopSequence;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -18,6 +21,8 @@ public class StopSequenceService {
 
     private final StopSequenceRepository repository;
     private final StopSequenceCache cache;
+
+    private static final Logger log = LoggerFactory.getLogger(StopSequenceService.class);
 
     public StopSequenceService(
             StopSequenceRepository repository,
@@ -54,29 +59,44 @@ public class StopSequenceService {
             String tripHeadsign,
             int directionId
     ) {
+        long start = System.currentTimeMillis();
+        log.info("Starting getCanonicalStopSequenceAndShape...");
+
         CanonicalStopSequenceAndShape cachedResult =
                 cache.getCanonicalStopSequenceAndShape(routeShortName, tripHeadsign, directionId);
-        if (cachedResult != null) return cachedResult;
+        if (cachedResult != null) {
+            log.info("{} ms: Returning cached result...",
+                    System.currentTimeMillis() - start);
+            return cachedResult;
+        }
 
+        log.info("{} ms: Getting canonicalStopSequence with related trips...",
+                System.currentTimeMillis() - start);
         CanonicalStopSequence canonicalStopSequence = getCanonicalStopSequenceWithTrips(
                 routeShortName, tripHeadsign, directionId);
         List<String> tripIds = canonicalStopSequence.tripIds();
 
-        // build shape_signature -> shapes map
-        Map<String, List<List<Shape>>> groupedShapes =
-                tripIds.stream()
-                        .map(repository::getShape)
-                        .filter(Objects::nonNull)
+        log.info("{} ms: Getting tripAndShapeList...",
+                System.currentTimeMillis() - start);
+        List<TripAndShape> tripAndShapeList = repository.getShapeIdsForTrips(tripIds);
+        Map<String, Long> counts =
+                tripAndShapeList.stream()
                         .collect(Collectors.groupingBy(
-                                StopSequenceService::shapeSignature
+                                TripAndShape::getShapeId,
+                                Collectors.counting()
                         ));
 
-        // find most frequent shape
-        List<Shape> canonicalShape =
-                groupedShapes.entrySet().stream()
-                        .max(Comparator.comparingInt(e -> e.getValue().size()))
+        log.info("{} ms: Determining canonicalShape...",
+                System.currentTimeMillis() - start);
+        String canonicalShapeId =
+                counts.entrySet().stream()
+                        .max(Map.Entry.comparingByValue())
                         .orElseThrow()
-                        .getValue().get(0);
+                        .getKey();
+
+        log.info("{} ms: Retrieving shape points...",
+                System.currentTimeMillis() - start);
+        List<Shape> canonicalShape = repository.getShape(canonicalShapeId);
 
         // result
         CanonicalStopSequenceAndShape result = new CanonicalStopSequenceAndShape(
@@ -85,6 +105,8 @@ public class StopSequenceService {
         // cache it
         cache.cacheCanonicalStopSequenceAndShape(routeShortName, tripHeadsign, directionId, result);
 
+        log.info("getCanonicalStopSequenceAndShape finished in {} ms",
+                System.currentTimeMillis() - start);
         return result;
     }
 
