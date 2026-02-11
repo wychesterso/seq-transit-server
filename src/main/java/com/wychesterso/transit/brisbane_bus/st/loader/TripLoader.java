@@ -88,7 +88,7 @@ public class TripLoader {
                     ON trips (trip_id);
                     CREATE INDEX IF NOT EXISTS idx_trips_route_id
                     ON trips (route_id);
-                    CREATE INDEX IF NOT EXISTS idx_trips_route_id
+                    CREATE INDEX IF NOT EXISTS idx_trips_shape_id
                     ON trips (shape_id);
                     CREATE INDEX IF NOT EXISTS idx_trips_trip_route
                     ON trips (trip_id, route_id);

@@ -24,11 +24,6 @@ public class GtfsZipDownloader {
         Files.createDirectories(targetDir);
 
         Path zipPath = targetDir.resolve("gtfs.zip");
-        long size = Files.size(zipPath);
-
-        log.info("Downloaded GTFS ZIP ({} MB) in {} ms",
-                size / (1024 * 1024),
-                System.currentTimeMillis() - start);
 
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder(URI.create(url)).build();
@@ -37,6 +32,12 @@ public class GtfsZipDownloader {
                 request,
                 HttpResponse.BodyHandlers.ofFile(zipPath)
         );
+
+        long size = Files.size(zipPath);
+
+        log.info("Downloaded GTFS ZIP ({} MB) in {} ms",
+                size / (1024 * 1024),
+                System.currentTimeMillis() - start);
 
         return zipPath;
     }

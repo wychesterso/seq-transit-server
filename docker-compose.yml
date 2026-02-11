@@ -1,0 +1,40 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: postgres
+    environment:
+      POSTGRES_DB: seq_transit
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:6
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  seq-transit-backend:
+    build: .
+    container_name: seq-transit-backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/seq_transit
+      SPRING_DATASOURCE_USERNAME: test
+      SPRING_DATASOURCE_PASSWORD: test
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      GTFS_LOAD_ON_STARTUP: true
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - gtfs_data:/tmp/gtfs
+
+volumes:
+  pgdata:
+  gtfs_data:
