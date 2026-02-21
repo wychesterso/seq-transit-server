@@ -28,7 +28,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: test
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
-      GTFS_LOAD_ON_STARTUP: true
+      GTFS_LOAD_ON_STARTUP: "true"
     depends_on:
       - postgres
       - redis
