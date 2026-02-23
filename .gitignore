@@ -38,3 +38,5 @@ out/
 
 *.hprof
 src/main/resources/static/SEQ_GTFS/
+
+.env

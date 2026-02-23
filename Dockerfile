@@ -28,10 +28,11 @@ WORKDIR /app
 # copy jar file
 COPY --from=builder /build/build/libs/*.jar app.jar
 
-COPY wait-for-it.sh /wait-for-it.sh
-RUN chmod +x /wait-for-it.sh
+# COPY wait-for-it.sh /wait-for-it.sh
+# RUN chmod +x /wait-for-it.sh
 
+ENV PORT=8080
 EXPOSE 8080
 
-# ENTRYPOINT ["java", "-jar", "app.jar"]
-ENTRYPOINT ["/wait-for-it.sh", "postgres:5432", "--timeout=60", "--strict", "--", "java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
+# ENTRYPOINT ["/wait-for-it.sh", "postgres:5432", "--timeout=60", "--strict", "--", "java", "-jar", "app.jar"]

@@ -1,5 +1,7 @@
 package com.wychesterso.transit.brisbane_bus.rt.model;
 
+import com.wychesterso.transit.brisbane_bus.api.repository.dto.StopDelay;
+
 public record RtStopDelay(
         String tripId,
         String stopId,
@@ -7,4 +9,16 @@ public record RtStopDelay(
         Integer effectiveDepartureSeconds,
         boolean cancelled,
         boolean skipped
-) {}
+) {
+    public static RtStopDelay from(StopDelay sd) {
+        if (sd == null) return null;
+        return new RtStopDelay(
+                sd.getTripId(),
+                sd.getStopId(),
+                sd.getEffectiveArrivalSeconds(),
+                sd.getEffectiveDepartureSeconds(),
+                sd.getCancelled(),
+                sd.getSkipped()
+        );
+    }
+}

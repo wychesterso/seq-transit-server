@@ -6,7 +6,6 @@ import com.wychesterso.transit.brisbane_bus.api.repository.dto.StopArrival;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.ArrivalResponse;
 import com.wychesterso.transit.brisbane_bus.rt.model.RtStopDelay;
 import com.wychesterso.transit.brisbane_bus.rt.model.TripStopKey;
-import com.wychesterso.transit.brisbane_bus.rt.service.GtfsRtIndexService;
 import com.wychesterso.transit.brisbane_bus.api.repository.ArrivalsRepository;
 import com.wychesterso.transit.brisbane_bus.api.service.time.ServiceClock;
 import com.wychesterso.transit.brisbane_bus.api.service.time.ServiceTimeHelper;
@@ -29,7 +28,7 @@ public class ArrivalsService {
     private final StopService stopService;
     private final StopSequenceService stopSequenceService;
 
-    private final GtfsRtIndexService rtIndex;
+    private final GtfsRtService rtIndex;
 
     private static final ZoneId BRISBANE = ZoneId.of("Australia/Brisbane");
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm:ss");
@@ -39,7 +38,7 @@ public class ArrivalsService {
             ArrivalsCache cache,
             StopService stopService,
             StopSequenceService stopSequenceService,
-            GtfsRtIndexService rtIndex
+            GtfsRtService rtIndex
     ) {
         this.repository = repository;
         this.cache = cache;
