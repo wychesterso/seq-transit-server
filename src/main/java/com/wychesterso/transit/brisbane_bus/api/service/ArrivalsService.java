@@ -4,11 +4,12 @@ import com.wychesterso.transit.brisbane_bus.api.cache.ArrivalsCache;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.ArrivalsAtStopResponse;
 import com.wychesterso.transit.brisbane_bus.api.repository.dto.StopArrival;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.ArrivalResponse;
-import com.wychesterso.transit.brisbane_bus.rt.model.RtStopDelay;
-import com.wychesterso.transit.brisbane_bus.rt.model.TripStopKey;
+import com.wychesterso.transit.brisbane_bus.core.model.RtStopDelay;
+import com.wychesterso.transit.brisbane_bus.api.service.dto.TripStopKey;
 import com.wychesterso.transit.brisbane_bus.api.repository.ArrivalsRepository;
 import com.wychesterso.transit.brisbane_bus.api.service.time.ServiceClock;
 import com.wychesterso.transit.brisbane_bus.api.service.time.ServiceTimeHelper;
+import com.wychesterso.transit.brisbane_bus.realtime_loader.GtfsRtService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;

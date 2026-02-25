@@ -1,7 +1,5 @@
 package com.wychesterso.transit.brisbane_bus;
 
-import com.wychesterso.transit.brisbane_bus.model.*;
-
 public class Bruh {
     public static void main(String[] args) {
         printCalendar();

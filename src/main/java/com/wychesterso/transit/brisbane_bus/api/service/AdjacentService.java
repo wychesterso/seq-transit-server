@@ -4,10 +4,8 @@ import com.wychesterso.transit.brisbane_bus.api.controller.dto.model.AdjacentRad
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.ServiceResponse;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.BriefStopResponse;
 import com.wychesterso.transit.brisbane_bus.api.controller.dto.model.ServiceGroup;
-import com.wychesterso.transit.brisbane_bus.st.loader.RouteLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

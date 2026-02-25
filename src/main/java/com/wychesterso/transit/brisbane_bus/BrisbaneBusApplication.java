@@ -7,7 +7,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class BrisbaneBusApplication {
 
 	public static void main(String[] args) {
-		System.out.println("MAIN METHOD STARTED");
 		SpringApplication.run(BrisbaneBusApplication.class, args);
 	}
 
