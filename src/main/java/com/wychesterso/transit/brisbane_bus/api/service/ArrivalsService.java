@@ -9,7 +9,7 @@ import com.wychesterso.transit.brisbane_bus.api.service.dto.TripStopKey;
 import com.wychesterso.transit.brisbane_bus.api.repository.ArrivalsRepository;
 import com.wychesterso.transit.brisbane_bus.api.service.time.ServiceClock;
 import com.wychesterso.transit.brisbane_bus.api.service.time.ServiceTimeHelper;
-import com.wychesterso.transit.brisbane_bus.realtime_loader.GtfsRtService;
+import com.wychesterso.transit.brisbane_bus.rt_loader.cache.RtIndexCache;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -29,7 +29,7 @@ public class ArrivalsService {
     private final StopService stopService;
     private final StopSequenceService stopSequenceService;
 
-    private final GtfsRtService rtIndex;
+    private final RtIndexCache rtIndexCache;
 
     private static final ZoneId BRISBANE = ZoneId.of("Australia/Brisbane");
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm:ss");
@@ -39,13 +39,13 @@ public class ArrivalsService {
             ArrivalsCache cache,
             StopService stopService,
             StopSequenceService stopSequenceService,
-            GtfsRtService rtIndex
+            RtIndexCache rtIndexCache
     ) {
         this.repository = repository;
         this.cache = cache;
         this.stopService = stopService;
         this.stopSequenceService = stopSequenceService;
-        this.rtIndex = rtIndex;
+        this.rtIndexCache = rtIndexCache;
     }
 
     public ArrivalsAtStopResponse getNextArrivalsForServiceAtStop(
@@ -90,7 +90,7 @@ public class ArrivalsService {
             Map<String, Integer> canonicalStopList,
             LocalDate serviceDate) {
 
-        Map<TripStopKey, RtStopDelay> rt = rtIndex.getIndex();
+        Map<TripStopKey, RtStopDelay> rt = rtIndexCache.getIndex();
         List<String> stopsInOrder = new ArrayList<>(canonicalStopList.keySet());
 
         return new ArrivalsAtStopResponse(

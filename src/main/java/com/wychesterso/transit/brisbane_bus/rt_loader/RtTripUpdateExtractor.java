@@ -1,4 +1,4 @@
-package com.wychesterso.transit.brisbane_bus.realtime_loader;
+package com.wychesterso.transit.brisbane_bus.rt_loader;
 
 import com.google.transit.realtime.GtfsRealtime.FeedEntity;
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
@@ -6,6 +6,7 @@ import com.google.transit.realtime.GtfsRealtime.TripDescriptor;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate.StopTimeUpdate;
 import com.wychesterso.transit.brisbane_bus.core.model.RtStopDelay;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.time.*;
@@ -13,7 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class TripUpdateExtractor {
+@Profile("api")
+public class RtTripUpdateExtractor {
 
     private static final ZoneId BRISBANE = ZoneId.of("Australia/Brisbane");
 
@@ -85,7 +87,7 @@ public class TripUpdateExtractor {
         if (epochSeconds == null || epochSeconds == 0) return null;
 
         ZonedDateTime localTime = Instant.ofEpochSecond(epochSeconds)
-                        .atZone(BRISBANE);
+                .atZone(BRISBANE);
 
         return Math.toIntExact(
                 Duration.between(

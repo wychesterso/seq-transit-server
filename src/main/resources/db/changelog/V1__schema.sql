@@ -106,14 +106,3 @@ CREATE TABLE stop_times (
     dropoff_type INTEGER,
     PRIMARY KEY(trip_id, stop_sequence)
 );
-
-CREATE TABLE gtfs_rt_stop_delay (
-    trip_id TEXT,
-    stop_id TEXT,
-    effective_arrival_seconds INT,
-    effective_departure_seconds INT,
-    cancelled BOOLEAN,
-    skipped BOOLEAN,
-    updated_at TIMESTAMP,
-    PRIMARY KEY(trip_id, stop_id)
-);
