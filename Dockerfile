@@ -20,8 +20,8 @@ RUN ./gradlew clean bootJar --no-daemon
 # ========== STAGE 2: Runtime image ==========
 FROM eclipse-temurin:17-jdk-alpine
 
-# install bash
-RUN apk add --no-cache bash
+# # install bash
+# RUN apk add --no-cache bash
 
 WORKDIR /app
 
@@ -31,7 +31,7 @@ COPY --from=builder /build/build/libs/*.jar app.jar
 # COPY wait-for-it.sh /wait-for-it.sh
 # RUN chmod +x /wait-for-it.sh
 
-ENV PORT=8080
+# ENV PORT=8080
 EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

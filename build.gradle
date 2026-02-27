@@ -6,7 +6,7 @@ plugins {
 
 group = 'com.wychesterso.transit'
 version = '0.0.1-SNAPSHOT'
-description = 'Real-time bus arrival tracker using GTFS-Realtime'
+description = 'Real-time transit arrivals API using GTFS data'
 
 java {
 	toolchain {
@@ -15,7 +15,7 @@ java {
 }
 
 springBoot {
-	mainClass = 'com.wychesterso.transit.brisbane_bus.BrisbaneBusApplication'
+	mainClass = 'com.wychesterso.transit.seq_transit.SEQTransitApplication'
 }
 
 bootJar {
@@ -30,14 +30,12 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'com.opencsv:opencsv:5.8'
     implementation 'org.postgresql:postgresql'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'org.mobilitydata:gtfs-realtime-bindings:0.0.8'
 	implementation 'com.google.protobuf:protobuf-java:3.25.3'
 	implementation 'commons-codec:commons-codec:1.16.0'
 	implementation 'com.uber:h3:3.7.2'
-	implementation 'org.liquibase:liquibase-core:4.33.0'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
