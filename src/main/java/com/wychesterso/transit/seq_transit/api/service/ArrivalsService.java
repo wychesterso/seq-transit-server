@@ -4,6 +4,7 @@ import com.wychesterso.transit.seq_transit.api.cache.ArrivalsCache;
 import com.wychesterso.transit.seq_transit.api.controller.dto.ArrivalsAtStopResponse;
 import com.wychesterso.transit.seq_transit.api.repository.dto.StopArrival;
 import com.wychesterso.transit.seq_transit.api.controller.dto.ArrivalResponse;
+import com.wychesterso.transit.seq_transit.api.service.dto.IntermediateArrival;
 import com.wychesterso.transit.seq_transit.core.model.RtStopDelay;
 import com.wychesterso.transit.seq_transit.api.service.dto.TripStopKey;
 import com.wychesterso.transit.seq_transit.api.repository.ArrivalsRepository;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -77,7 +79,8 @@ public class ArrivalsService {
                         routeShortName,
                         tripHeadsign,
                         directionId),
-                serviceDate
+                serviceDate,
+                nowSeconds
         );
         cache.cacheNextArrivalsForServiceAtStop(
                 stopId, routeShortName, tripHeadsign, directionId, serviceDate, response);
@@ -89,7 +92,8 @@ public class ArrivalsService {
             String stopId,
             List<StopArrival> arrivals,
             Map<String, Integer> canonicalStopList,
-            LocalDate serviceDate) {
+            LocalDate serviceDate,
+            int nowSeconds) {
 
         Map<TripStopKey, RtStopDelay> rt = rtIndexCache.getIndex();
         List<String> stopsInOrder = new ArrayList<>(canonicalStopList.keySet());
@@ -102,9 +106,6 @@ public class ArrivalsService {
                 arrivals
                         .stream()
                         .map(r -> {
-                            LocalDateTime scheduledArr = serviceDate.atStartOfDay().plusSeconds(r.getArrivalTimeSeconds());
-                            LocalDateTime scheduledDep = serviceDate.atStartOfDay().plusSeconds(r.getDepartureTimeSeconds());
-
                             RtStopDelay delayInfo = rt.get(new TripStopKey(r.getTripId(), r.getStopId()));
 
                             boolean hasRt = delayInfo != null;
@@ -125,31 +126,59 @@ public class ArrivalsService {
                                     ? rtDepSeconds
                                     : scheduledDepSeconds;
 
-                            Integer arrDelay = rtArrSeconds != null
-                                    ? effectiveArrSeconds - scheduledArrSeconds
-                                    : null;
-                            Integer depDelay = rtDepSeconds != null
-                                    ? effectiveDepSeconds - scheduledDepSeconds
-                                    : null;
-
-                            LocalDateTime effectiveArr = serviceDate.atStartOfDay().plusSeconds(effectiveArrSeconds);
-                            LocalDateTime effectiveDep = serviceDate.atStartOfDay().plusSeconds(effectiveDepSeconds);
-
-                            return new ArrivalResponse(
-                                    r.getTripId(),
-                                    r.getArrivalTimeSeconds(),
-                                    scheduledArr.format(TIME_FMT),
+                            return new IntermediateArrival(
+                                    r,
+                                    scheduledArrSeconds,
                                     effectiveArrSeconds,
-                                    effectiveArr.format(TIME_FMT),
-                                    arrDelay,
-                                    r.getDepartureTimeSeconds(),
-                                    scheduledDep.format(TIME_FMT),
+                                    scheduledDepSeconds,
                                     effectiveDepSeconds,
-                                    effectiveDep.format(TIME_FMT),
-                                    depDelay,
                                     hasRt,
                                     cancelled,
                                     skipped
+                            );
+                        })
+                        // remove cancelled/skipped
+                        .filter(a -> !a.cancelled() && !a.skipped())
+                        // remove arrivals in the past
+                        .filter(a -> a.effectiveArrSeconds() >= nowSeconds)
+                        // sort by effective arrival time
+                        .sorted(Comparator.comparingInt(a -> a.effectiveArrSeconds()))
+                        // take 3
+                        .limit(3)
+                        // convert to response
+                        .map(a -> {
+                            StopArrival r = a.stopArrival();
+
+                            LocalDateTime scheduledArr =
+                                    serviceDate.atStartOfDay().plusSeconds(a.scheduledArrSeconds());
+                            LocalDateTime scheduledDep =
+                                    serviceDate.atStartOfDay().plusSeconds(a.scheduledDepSeconds());
+
+                            LocalDateTime effectiveArr =
+                                    serviceDate.atStartOfDay().plusSeconds(a.effectiveArrSeconds());
+                            LocalDateTime effectiveDep =
+                                    serviceDate.atStartOfDay().plusSeconds(a.effectiveDepSeconds());
+
+                            Integer arrDelay =
+                                    a.effectiveArrSeconds() - a.scheduledArrSeconds();
+                            Integer depDelay =
+                                    a.effectiveDepSeconds() - a.scheduledDepSeconds();
+
+                            return new ArrivalResponse(
+                                    r.getTripId(),
+                                    a.scheduledArrSeconds(),
+                                    scheduledArr.format(TIME_FMT),
+                                    a.effectiveArrSeconds(),
+                                    effectiveArr.format(TIME_FMT),
+                                    arrDelay,
+                                    a.scheduledDepSeconds(),
+                                    scheduledDep.format(TIME_FMT),
+                                    a.effectiveDepSeconds(),
+                                    effectiveDep.format(TIME_FMT),
+                                    depDelay,
+                                    a.hasRt(),
+                                    false,
+                                    false
                             );
                         })
                         .toList()

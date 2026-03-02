@@ -65,23 +65,52 @@ public interface ArrivalsRepository extends JpaRepository<StopTime, String> {
                     WHERE date = TO_DATE(CAST(:serviceDateInt AS text), 'YYYYMMDD')
                     AND exception_type = 2
                 )
-        
-                SELECT
-                    st.trip_id        AS tripId,
-                    st.stop_id        AS stopId,
-                    st.arrival_time   AS arrivalTimeSeconds,
-                    st.departure_time AS departureTimeSeconds
-                FROM stop_times st
-                JOIN trips t ON t.trip_id = st.trip_id
-                JOIN routes r ON t.route_id = r.route_id
-                WHERE st.stop_id = :stopId
-                    AND r.route_short_name = :routeShortName
-                    AND t.trip_headsign = :tripHeadsign
-                    AND t.direction_id = :directionId
-                    AND t.service_id IN (SELECT service_id FROM active_services)
-                    AND st.arrival_time >= :now
-                ORDER BY st.arrival_time
-                LIMIT 3
+            
+                SELECT *
+                FROM (
+                    -- 5 previous scheduled arrivals
+                    (
+                        SELECT
+                            st.trip_id        AS tripId,
+                            st.stop_id        AS stopId,
+                            st.arrival_time   AS arrivalTimeSeconds,
+                            st.departure_time AS departureTimeSeconds
+                        FROM stop_times st
+                        JOIN trips t ON t.trip_id = st.trip_id
+                        JOIN routes r ON t.route_id = r.route_id
+                        WHERE st.stop_id = :stopId
+                            AND r.route_short_name = :routeShortName
+                            AND t.trip_headsign = :tripHeadsign
+                            AND t.direction_id = :directionId
+                            AND t.service_id IN (SELECT service_id FROM active_services)
+                            AND st.arrival_time < :now
+                        ORDER BY st.arrival_time DESC
+                        LIMIT 5
+                    )
+            
+                    UNION ALL
+            
+                    -- 5 next scheduled arrivals
+                    (
+                        SELECT
+                            st.trip_id        AS tripId,
+                            st.stop_id        AS stopId,
+                            st.arrival_time   AS arrivalTimeSeconds,
+                            st.departure_time AS departureTimeSeconds
+                        FROM stop_times st
+                        JOIN trips t ON t.trip_id = st.trip_id
+                        JOIN routes r ON t.route_id = r.route_id
+                        WHERE st.stop_id = :stopId
+                            AND r.route_short_name = :routeShortName
+                            AND t.trip_headsign = :tripHeadsign
+                            AND t.direction_id = :directionId
+                            AND t.service_id IN (SELECT service_id FROM active_services)
+                            AND st.arrival_time >= :now
+                        ORDER BY st.arrival_time ASC
+                        LIMIT 5
+                    )
+                ) combined
+                ORDER BY arrivalTimeSeconds ASC
             """,
             nativeQuery = true
     )
