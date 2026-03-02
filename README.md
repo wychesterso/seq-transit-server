@@ -123,7 +123,7 @@ Real-time GTFS feed is sourced from: **[https://gtfsrt.api.translink.com.au/api/
 Build and run locally via a Docker container:
 
 ```bash
-docker built -t TAG .
+docker build -t TAG .
 docker run -p 8080:8080 TAG
 ```
 
