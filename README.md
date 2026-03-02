@@ -118,11 +118,25 @@ Real-time GTFS feed is sourced from: **[https://gtfsrt.api.translink.com.au/api/
 
 ---
 
+## Local Build
+
+Build and run locally via a Docker container:
+
+```bash
+docker built -t TAG .
+docker run -p 8080:8080 TAG
+```
+
+Then the API endpoints can be queried via:  
+`http://localhost:8080`
+
+---
+
 ## Cloud Architecture
 
 The system was redesigned specifically to operate within free-tier limits:  
 → Cloud Run (0–1 instances)  
-→ PostgreSQL (Neon)
+→ Neon Serverless PostgreSQL
 
 Cold starts are acceptable and expected for this personal-use system.
 
