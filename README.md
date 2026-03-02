@@ -22,6 +22,10 @@ Within the SEQ Transit pipeline, `seq-transit-server` is responsible for:
 - (currently disabled) Caching API responses in Redis to improve performance and reduce load
 - Exposing RESTful API endpoints for the mobile app to consume real-time and static transit data
 
+Companion Projects:
+- [Static Loader](https://github.com/wychesterso/seq-transit-static-loader)
+- [Mobile App](https://github.com/wychesterso/seq-transit-app)
+
 ---
 
 ## API Endpoints
@@ -121,6 +125,16 @@ The system was redesigned specifically to operate within free-tier limits:
 → PostgreSQL (Neon)
 
 Cold starts are acceptable and expected for this personal-use system.
+
+Deployment:
+
+```bash
+docker build -t REGION-docker.pkg.dev/PROJECT_ID/REPOSITORY/SERVICE_NAME:TAG .
+docker push REGION-docker.pkg.dev/PROJECT_ID/REPOSITORY/SERVICE_NAME:TAG .
+gcloud run deploy SERVICE_NAME \
+  --image REGION-docker.pkg.dev/PROJECT_ID/REPOSITORY/SERVICE_NAME:TAG \
+  --region REGION \
+```
 
 ---
 
